@@ -1,0 +1,812 @@
+# Parameter file for input to Cosmic_Banana.py
+
+# --------------------------------------------------------------------- GENERAL ANALYSIS ------------------------------------------------------------------------------
+Use_Stats = []	  																	# Which statistics in this params_file to use in analysis
+Combine_Stats = [[1,2,3,4,5],[6,7,8,9,10],[11,12,13,14,15]]	                                                                
+																						# Which statistics to combine, e.g. [[1,2,3], [4,5]] means 
+																						# combine stats 1&2&3 and separately combine 4&5. Empty means no combinations.
+
+OneD_TwoD_Or_nD = 2D																		# Variable specifying if it's a 2D grid or 1D line of likelihood evaluations.
+x_Res = 200																				# Num of pxls on the x-axis of the likelihood evaluations
+y_Res = 200																				# if OneD_Or_TwoD is set to 2D, y_Res is inferred from num of predictions & x_Res.
+
+DataNodesFile = /disk2/ps1/bengib/cosmoSLICS/Likelihood/Data_4Lhood/Emulated_Vectors/Fid_Cosmology_OmS8hw.dat     																
+DataNodesCols = [0,4]																	# Which columns to pull out of DataNodesFile
+																						# If 1 number, will do a 1D analysis, if 2 numbers, it'll do 2D.
+
+# Option to apply an S8 prior
+Apply_S8Prior = True
+S8_Bounds = [0.45,1.04]
+
+# Plotting variables
+DataLabel = ''
+xLabel = r'$\Omega_{\rm m}$'
+yLabel = r'$\sigma_8$'
+plot_savename = Results_2D/Ommsigma8/cosmoSLICS/Plot_cosmoSLICS_Ommsigma8.png
+
+
+
+
+# --------------------------------------------------------------------- STATISTIC 1 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS2.2arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.1-0.3/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.1-0.3_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.1-0.3_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'darkred'
+
+
+
+# --------------------------------------------------------------------- STATISTIC 2 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS2.2arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.3-0.5/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.3-0.5_SN0.258.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.3-0.5_SN0.258.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$, $0.3<z_{\rm B}<0.5$'
+PlotColour = 'indianred'
+
+
+# --------------------------------------------------------------------- STATISTIC 3 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS2.2arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.5-0.7/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.5-0.7_SN0.273.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.5-0.7_SN0.273.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$, $0.5<z_{\rm B}<0.7$'
+PlotColour = 'darkorange'
+
+# --------------------------------------------------------------------- STATISTIC 4 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS2.2arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.7-0.9/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.7-0.9_SN0.254.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.7-0.9_SN0.254.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'greenyellow'
+
+# --------------------------------------------------------------------- STATISTIC 5 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS2.2arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.9-1.2/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.9-1.2_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.9-1.2_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$, $0.9<z_{\rm B}<1.2$'
+PlotColour = 'deepskyblue'
+
+
+
+
+
+
+
+
+
+# --------------------------------------------------------------------- STATISTIC 6 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS6.6arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.1-0.3/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.1-0.3_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.1-0.3_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'darkred'
+
+
+
+# --------------------------------------------------------------------- STATISTIC 7 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS6.6arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.3-0.5/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.3-0.5_SN0.258.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.3-0.5_SN0.258.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, $0.3<z_{\rm B}<0.5$'
+PlotColour = 'indianred'
+
+
+# --------------------------------------------------------------------- STATISTIC 8 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS6.6arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.5-0.7/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.5-0.7_SN0.273.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.5-0.7_SN0.273.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, $0.5<z_{\rm B}<0.7$'
+PlotColour = 'darkorange'
+
+# --------------------------------------------------------------------- STATISTIC 9 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS6.6arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.7-0.9/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.7-0.9_SN0.254.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.7-0.9_SN0.254.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'greenyellow'
+
+# --------------------------------------------------------------------- STATISTIC 10 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS6.6arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.9-1.2/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.9-1.2_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.9-1.2_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, $0.9<z_{\rm B}<1.2$'
+PlotColour = 'deepskyblue'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------------------------------------------------------------------- STATISTIC 11 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS60.0arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.1-0.3/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.1-0.3_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.1-0.3_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'darkred'
+
+
+
+# --------------------------------------------------------------------- STATISTIC 12 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS60.0arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.3-0.5/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.3-0.5_SN0.258.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.3-0.5_SN0.258.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$, $0.3<z_{\rm B}<0.5$'
+PlotColour = 'indianred'
+
+
+# --------------------------------------------------------------------- STATISTIC 13 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS60.0arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.5-0.7/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.5-0.7_SN0.273.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.5-0.7_SN0.273.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$, $0.5<z_{\rm B}<0.7$'
+PlotColour = 'darkorange'
+
+# --------------------------------------------------------------------- STATISTIC 14 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS60.0arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.7-0.9/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.7-0.9_SN0.254.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.7-0.9_SN0.254.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'yellowgreen'
+
+# --------------------------------------------------------------------- STATISTIC 15 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              # Number of bins in this statistic
+Bins_To_Use = range(4)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/SNR/SS60.0arcmin/Nicaea_Ommsigma8Grid_200x200/4_Bins/GPPredictions_ZBcut0.9-1.2/PredictionsPDF_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_ZBcut0.9-1.2_SN0.27.npy
+
+CovArea = 100																				# The sky area this covariance was measured on
+SurveyArea = 1000																				# Survey size you want to scale the cov to.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/PDF_zKiDS1000_CosmolDatacosmoSLICS-KiDS1000-batch2_ZBcut0.9-1.2_SN0.27.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$, $0.9<z_{\rm B}<1.2$'
+PlotColour = 'deepskyblue'
+
+
+
+# --------------------------------------------------------------------- STATISTIC 16 ------------------------------------------------------------------------------
+
+nBins = 9                                                                              # Number of bins in this statistic
+Bins_To_Use = range(9)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/Unclipped/Nicaea_Ommsigma8Grid_200x200/KiDS_Bins/GPPredictions_ZBcut0.1-0.3/Predictionsxip_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = 
+
+CovArea = 100																			# The sky area this covariance was measured on
+SurveyArea = 1000																		# Survey size you want to scale the cov to.
+Nreal = 715 																			# Num realisations in cov  
+																						# Used to calc Hartlap correction if Apply Hartlap is True.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/Unclipped/ZBcut0.1-0.3/SN0.27_test.KiDS1000GpAM.NLOS50.AverageCF+.Cosmol25.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\xi_+$, $0.1<z_{\rm B}<0.3$'
+PlotColour = 'darkred'
+
+
+# --------------------------------------------------------------------- STATISTIC 17 ------------------------------------------------------------------------------
+
+nBins = 9                                                                              # Number of bins in this statistic
+Bins_To_Use = range(9)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/Unclipped/Nicaea_Ommsigma8Grid_200x200/KiDS_Bins/GPPredictions_ZBcut0.3-0.5/Predictionsxip_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = 
+
+CovArea = 100																			# The sky area this covariance was measured on
+SurveyArea = 1000																		# Survey size you want to scale the cov to.
+Nreal = 715 																			# Num realisations in cov  
+																						# Used to calc Hartlap correction if Apply Hartlap is True.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/Unclipped/ZBcut0.3-0.5/SN0.258_test.KiDS1000GpAM.NLOS50.AverageCF+.Cosmol25.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\xi_+$, $0.3<z_{\rm B}<0.5$'
+PlotColour = 'indianred'
+
+
+# --------------------------------------------------------------------- STATISTIC 18 ------------------------------------------------------------------------------
+
+nBins = 9                                                                              # Number of bins in this statistic
+Bins_To_Use = range(9)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/Unclipped/Nicaea_Ommsigma8Grid_200x200/KiDS_Bins/GPPredictions_ZBcut0.5-0.7/Predictionsxip_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = 
+
+CovArea = 100																			# The sky area this covariance was measured on
+SurveyArea = 1000																		# Survey size you want to scale the cov to.
+Nreal = 715 																			# Num realisations in cov  
+																						# Used to calc Hartlap correction if Apply Hartlap is True.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/Unclipped/ZBcut0.5-0.7/SN0.273_test.KiDS1000GpAM.NLOS50.AverageCF+.Cosmol25.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\xi_+$, $0.5<z_{\rm B}<0.7$'
+PlotColour = 'darkorange'
+
+
+# --------------------------------------------------------------------- STATISTIC 19 ------------------------------------------------------------------------------
+
+nBins = 9                                                                              # Number of bins in this statistic
+Bins_To_Use = range(9)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/Unclipped/Nicaea_Ommsigma8Grid_200x200/KiDS_Bins/GPPredictions_ZBcut0.7-0.9/Predictionsxip_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = 
+
+CovArea = 100																			# The sky area this covariance was measured on
+SurveyArea = 1000																		# Survey size you want to scale the cov to.
+Nreal = 715 																			# Num realisations in cov  
+																						# Used to calc Hartlap correction if Apply Hartlap is True.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/Unclipped/ZBcut0.7-0.9/SN0.254_test.KiDS1000GpAM.NLOS50.AverageCF+.Cosmol25.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\xi_+$, $0.7<z_{\rm B}<0.9$'
+PlotColour = 'yellowgreen'
+
+
+# --------------------------------------------------------------------- STATISTIC 20 ------------------------------------------------------------------------------
+
+nBins = 9                                                                              # Number of bins in this statistic
+Bins_To_Use = range(9)                                                                 # Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Emulator_Results/Unclipped/Nicaea_Ommsigma8Grid_200x200/KiDS_Bins/GPPredictions_ZBcut0.9-1.2/Predictionsxip_N26_IncludexFalse_PCATrue_ScaleNodesFalse_ErrorNone_TrainedOnCS.npy
+																						# General Filename of predictions 
+																						# with 'XXXX' replacing the ID of the separate predictions
+																						# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 																				# ID numbers to replace 'XXXX'. 
+																						# If IDs are not numbers, or not sequential, put list here.
+																						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = 																			    # [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+																						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = /disk2/ps1/bengib/cosmoSLICS/Cosmologies/GridOmmsigma8_200x200.txt		# File for coords (nodes) of the predictions
+																						# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,4]																	# Which columns to pull out of PredNodesFile
+
+
+CovFile = 
+
+CovArea = 100																			# The sky area this covariance was measured on
+SurveyArea = 1000																		# Survey size you want to scale the cov to.
+Nreal = 715 																			# Num realisations in cov  
+																						# Used to calc Hartlap correction if Apply Hartlap is True.
+
+DataFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/Unclipped/ZBcut0.9-1.2/SN0.27_test.KiDS1000GpAM.NLOS50.AverageCF+.Cosmol25.dat
+DataCols = [0,1]
+
+PlotLabel = r'$\xi_+$, $0.9<z_{\rm B}<1.2$'
+PlotColour = 'deepskyblue'
+
+
+
+# --------------------------------------------------------------------- END OF STATISTICS ------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Tree_Correlation_Function/MRres60arcs_100Sqdeg_SN0.27_NoMask_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3/ThBins9/NLOS715/SN0.27_test.KiDS1000GpAM.NLOS715.ORIG.UCxUC+.CovMat.zbins1-2-3-4-5.npy
+			
+CovArea = 100													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 715 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_+$'
+PlotColour = 'darkblue'
+
+
+# --------------------------------------------------------------------- COMBINATION 1 ------------------------------------------------------------------------------
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin/Cov_zKiDS1000_Cosmol25_zbins1-2-3-4-5_SN0.27.npy
+			
+CovArea = 100													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 2.2 \, \rm{arcmin}$'
+PlotColour = 'lightgreen'
+
+SmoothContour = False                                           # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2													# standev of smoothin kernel, in units of pxls on the grid.
+
+
+# --------------------------------------------------------------------- COMBINATION 2 ------------------------------------------------------------------------------
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS6.6arcmin/Cov_zKiDS1000_Cosmol25_zbins1-2-3-4-5_SN0.27.npy
+			
+CovArea = 100													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$'
+PlotColour = 'dimgrey'
+
+
+
+# --------------------------------------------------------------------- COMBINATION 3 ------------------------------------------------------------------------------
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS60.0arcmin/Cov_zKiDS1000_Cosmol25_zbins1-2-3-4-5_SN0.27.npy
+			
+CovArea = 100													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+PlotLabel = r'$\rm{PDF}(SNR) \,, \sigma_{\rm s} = 60 \, \rm{arcmin}$'
+PlotColour = 'red'
+
+
+
+# --------------------------------------------------------------------- COMBINATION 4 ------------------------------------------------------------------------------
+CovFile = /disk2/ps1/bengib/Clipping_SimsLvW/Emulating_Clipped_CosmoSLICS/Files_4_Emulator/SNR/SS2.2arcmin-6.6arcmin-60.0arcmin/Cov_zKiDS1000_Cosmol25_zbins1-2-3-4-5_SN0.27.npy
+			
+CovArea = 100													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+PlotLabel = r'$\rm{PDF}(SNR)$ Combined'
+PlotColour = 'orange'
+
+SmoothContour = False                                           # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2													# standev of smoothin kernel, in units of pxls on the grid.
+
+
+
+
+
+
+
+
+
+
+
+
+
