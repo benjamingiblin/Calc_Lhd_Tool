@@ -31,17 +31,6 @@ class Get_Input:
 		self.paramfile = paramfile
 		self.paraminput = open(self.paramfile).read()
 
-		# The following are things used by the lnlike function in MCMC sampling
-		# initialised as None, but set once at the start of sampling, to save time
-		# by avoiding reading them from file at every step in the chain.
-		self.Train_x_4thiscomb           = None		 # x-coords of the emulator training set (e.g. theta [arcmin], k [h/Mpc] )
-		self.inTrain_Pred_4thiscomb      = None   	 # (Transformed) Training preds for emulator, stacked for a given combination of stats.
-		# --- Following only get used if Perform_PCA is true ---
-		self.Train_BFs_4thiscomb         = None		 # Basis functions for this training pred set, stacked for given stats combo.
-		self.inTrain_Pred_Mean_4thiscomb = None      # inTrain_Pred_4thiscomb avg'd across the predictions
-		self.HPs_4thiscomb               = None      # stacked hyperparameters for this combination of stats.
-		
-
 	# --- what stats to use ---
 	def Use_Stats(self): 
 		return eval(self.paraminput.split('Use_Stats = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
@@ -528,22 +517,19 @@ class Get_Input:
 					return -np.inf
 		return 0.
 
-	# This function is called once at the start of each likelihood sampling
-	# to read in, set the emulator Training set + HPs, and apply the relevant transformations
-	# for this combination of stats.
-	# This is then stored in memory, saving time by avoiding the lnlike func reading from
-	# file every step of the chain. 
-	def Assemble_TrainPred_and_HPs( self, comb ):
-		# temporary arrays to store & stack the info for each stat in this combination.
-		HPs_store             = []
-		Train_x_store         = []
-		inTrain_Pred_store    = []
-		Train_Pred_Mean_store = []
-		Train_BFs_store       = []
+	# log likelihood (executing emulator at each step). 
+	def lnlike(self, p, cov, data, comb):
 
+		# scroll through the statistics in this combination, 
+		# read in the predictions (emulator needs these even when trained),
+		# and emulate prediction for this cosmology.
+
+		GP_Pred_All = np.ones([]) # Store the emulated predictions for each stat used in the combination.
 		for stat in comb:
-			Train_x, Train_Pred = self.LoadPred(stat)			
-			
+			HPs = self.HPs( stat )
+		
+			Train_x, Train_Pred = self.LoadPred(stat) 
+		
 			# Identify the transformation for this statistic
 			if self.Transform(stat) == "log":  
 				Train_Pred = np.log( Train_Pred )
@@ -564,57 +550,14 @@ class Get_Input:
 				inTrain_Pred = np.copy( Train_Weights )
 			else:
 				inTrain_Pred = np.copy(Train_Pred)
-				Train_BFs = []        # dummy to be stored in case you have a mix of stats which do/dont use PCA in this combination.				
-				Train_Pred_Mean = []  # ^same. Need these to preserve order of stored BFs and Train Pred Means.
-				
-			# storing info for each stat in the combination:
-			HPs_store.append( self.HPs( stat ) )
-			Train_x_store.append( Train_x )
-			inTrain_Pred_store.append( inTrain_Pred )
-			Train_BFs_store.append( Train_BFs )
-			Train_Pred_Mean_store.append( Train_Pred_Mean )
 
-		# store everything to be used by the lnlike function
-		self.HPs_4thiscomb               = HPs_store
-		self.Train_x_4thiscomb           = Train_x_store	 
-		self.inTrain_Pred_4thiscomb      = inTrain_Pred_store 	 
-		# --- Following only get used if Perform_PCA is true ---
-		self.Train_BFs_4thiscomb         = Train_BFs_store  		 
-		self.inTrain_Pred_Mean_4thiscomb = Train_Pred_Mean_store    
-
-		return
-
-
-
-	# log likelihood (executing emulator at each step). 
-	def lnlike(self, p, cov, data, comb):
-
-		# scroll through the statistics in this combination, 
-		# read in the predictions (emulator needs these even when trained),
-		# and emulate prediction for this cosmology.
-		# start by checking the TrainPred has been correctly set for this combo of stats:
-		if self.inTrain_Pred_4thiscomb == None:
-			self.Assemble_TrainPred_and_HPs( comb )
-
-
-		GP_Pred_All = np.ones([]) # Store the emulated predictions for each stat used in the combination.
-		count = 0                 # count increments through statistics
-		for stat in comb:
-			# Grab the important data from memory needed for the likelihood evaluation
-			HPs             = self.HPs_4thiscomb[count]
-			Train_x         = self.Train_x_4thiscomb[count]	 
-			inTrain_Pred    = self.inTrain_Pred_4thiscomb[count]       
-			Train_BFs       = self.Train_BFs_4thiscomb[count]          		 
-			Train_Pred_Mean = self.inTrain_Pred_Mean_4thiscomb[count]
 		
-			# Run the emulator		
 			GPR_Class = GPR_Emu( self.LoadPredNodes(stat), inTrain_Pred, np.zeros_like(inTrain_Pred), p.reshape(1,-1) )	
 			GP_AVOUT, GP_STDOUT, GP_HPs = GPR_Class.GPRsk(HPs, None, self.n_restarts_optimizer(stat) )	
 
 			# Un-do the PCA if appropriate
 			# Output is shaped (1,n_components) --> need to select [0,:]
 			if self.Perform_PCA(stat):
-				PCAC = PCA_Class(self.n_components(stat))
 				GP_Pred = PCAC.Convert_PCAWeights_2_Predictions(GP_AVOUT, Train_BFs, Train_Pred_Mean)[0,:]
 			else:
 				GP_Pred = GP_AVOUT[0,:]
@@ -627,9 +570,6 @@ class Get_Input:
 
 			# Combine the predictions
 			GP_Pred_All = np.append( GP_Pred_All, GP_Pred ) 
-			
-			# increment statistics count.
-			count +=1
 
 		GP_Pred_All = np.delete( GP_Pred_All, 0 )  # get rid of first element (comes from initialisation) & un-do log transform
 		LnLike = -0.5 * np.dot( np.transpose(data - GP_Pred_All), np.dot(np.linalg.inv(cov), (data - GP_Pred_All)  ))
@@ -681,14 +621,6 @@ class Get_Input:
 		samples = sampler.chain[:, :, :].reshape((-1, ndim))
 		t3 = time.time()
 		print( "Finished. Main MCMC took %.1f minutes. The whole MCMC took %.1f minutes." %( ((t3-t2)/60.), ((t3-t0)/60.) ) )
-
-		# Just in case the parameter file specifies MULTIPLE combinations of stats, we need to RESET
-		# the following variables, which stored data specific to each combination of statistics in memory.
-		self.Train_x_4thiscomb           = None		 
-		self.inTrain_Pred_4thiscomb      = None   	 
-		self.Train_BFs_4thiscomb         = None		 
-		self.inTrain_Pred_Mean_4thiscomb = None      
-		self.HPs_4thiscomb               = None     	 
 
 		return samples
 
