@@ -11,7 +11,7 @@ import numpy as np
 import sys
 from Classes_4_Lhd import Get_Input 
 
-Run_MCMC = True
+Run_MCMC = False
 
 paramfile = sys.argv[1]
 GI = Get_Input(paramfile)   

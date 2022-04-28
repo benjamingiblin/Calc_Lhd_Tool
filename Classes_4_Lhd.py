@@ -7,8 +7,9 @@ import os
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
-rcParams['ps.useafm'] = True
-rcParams['pdf.use14corefonts'] = True
+
+rcParams['ps.useafm'] = False #True
+rcParams['pdf.use14corefonts'] = False
 font = {'family' : 'serif',
         'weight' : 'normal',
         'size'   : 20}                                                                                                           
@@ -217,12 +218,12 @@ class Get_Input:
 
 	# --- PRIORS & STARTING MCMC COSMOLOGY PER STATISTIC --- 
 	def Priors_Start_MCMC(self, stat_num):
+		nodes= self.LoadPredNodes(stat_num, 'pred') 
 		priorfile=self.Filter_Stat_Info(stat_num).split('Prior_File = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 		try:
 			priors = np.load( priorfile )
 		except FileNotFoundError:
 			#print("Using default uniform priors (bounds of training set)")
-			nodes= self.LoadPredNodes(stat_num, 'pred') 
 			priors = []
 			for i in range(nodes.shape[1]):
 				priors.append([ nodes[:,i].min(), nodes[:,i].max() ])
@@ -232,6 +233,8 @@ class Get_Input:
 		start = np.zeros( priors.shape[0] ) 
 		for i in range(nodes.shape[1]):
 			start[i] = ( priors[i].min() + priors[i].max() ) /2.
+		#print("STAT %s PRIORS:....." %stat_num)
+		#print( priors)
 		return priors, start
 
 
@@ -260,6 +263,12 @@ class Get_Input:
 	def PlotCombinedColour(self, stat_num):
 		return eval(self.Filter_Combine_Info(stat_num).split('PlotColour = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
+	def PlotCombinedLS(self, stat_num):
+		try:
+			return eval(self.Filter_Combine_Info(stat_num).split('Linestyle = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		except SyntaxError:
+			return '-'
+        
 	def SmoothCombinedContour(self, stat_num):
 		try:
 			output=eval( self.Filter_Combine_Info(stat_num).split('SmoothContour = ')[-1].split('#')[0].split('\n')[0] )
@@ -851,8 +860,9 @@ class Get_Input:
 			
 			plt.contour(Log_Lhds_Comb[i], [Contours_Comb[i][0], Contours_Comb[i][1]], 
 						origin='lower', extent = [xc.min(), xc.max(), yc.min(), yc.max()], linewidths=LW, 
-						colors=self.PlotCombinedColour(i+1) )
-			handles.append( mlines.Line2D([],[],color=self.PlotCombinedColour(i+1), linewidth=LW, label=self.PlotCombinedLabel(i+1)) ) 
+						colors=self.PlotCombinedColour(i+1), linestyles=self.PlotCombinedLS(i+1) )
+			handles.append( mlines.Line2D([],[],color=self.PlotCombinedColour(i+1), linestyle=self.PlotCombinedLS(i+1) ),
+                                                      linewidth=LW, label=self.PlotCombinedLabel(i+1)) 
 
 		# Plot the truth			
 		x_data, y_data = self.LoadDataNodes()
@@ -905,9 +915,9 @@ class Get_Input:
 
 		font = {'family' : 'serif',
 	        'weight' : 'normal',
-	        'size'   : 20}                                                                                                           
+	                'size'   : 28}                                                                                                           
 		plt.rc('font', **font)
-		lw = 2
+		lw = 3
 		max_n_ticks = 3
 
 		# Scroll through combinations of statistics, read in samples & plot their contours.
@@ -926,8 +936,7 @@ class Get_Input:
 		for i in range( len(self.Combine_Stats()) ):
 			comb_num = i+1
 			# sample_name matches the one used in Master_Run_MCMC
-			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(), self.SurveyCombinedArea(comb_num), 
-																					self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
+			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(),self.SurveyCombinedArea(comb_num),self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
 			samples = np.load( sample_name )
 			
 			if limits == None:
@@ -942,7 +951,8 @@ class Get_Input:
 				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
 						plot_contours=True, plot_density=False, plot_datapoints=False,
 						smooth=1, levels=(0.68,0.95), truths=self.LoadDataNodes(), truth_color='black', 
-						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw},
+						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw, 
+										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
 						max_n_ticks=max_n_ticks)
 
@@ -951,11 +961,14 @@ class Get_Input:
 				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
 						plot_contours=True, plot_density=False, plot_datapoints=False,
 						smooth=1, levels=(0.68,0.95), truths=self.LoadDataNodes(),
-						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw},
+						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw,
+										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
 						max_n_ticks=max_n_ticks, fig=fig)
 
-			handles.append( mlines.Line2D([], [], color=self.PlotCombinedColour( comb_num ), label=self.PlotCombinedLabel( comb_num )) )
+			handles.append( mlines.Line2D([], [], color=self.PlotCombinedColour( comb_num ),
+                                                      linestyle=self.PlotCombinedLS( comb_num ),
+                                                      label=self.PlotCombinedLabel( comb_num )) )
 
 			# extract and save the constraints:
 			tmp_constraints = np.empty([ samples.shape[1], 3 ])
@@ -966,7 +979,7 @@ class Get_Input:
 				tmp_constraints[j] = np.array([ mean, upper, lower ])
 			constraints.append( tmp_constraints )
 		
-		fig.set_size_inches((12,10))
+		fig.set_size_inches((16,17))
 		plt.legend(handles=handles, bbox_to_anchor=(0., 2.2, 1.0, .0), loc=4)
 
 		if savename == None:
