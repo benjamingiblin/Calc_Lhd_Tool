@@ -151,11 +151,14 @@ class Get_Input:
 	def PredCols(self, stat_num): 
 		return eval(self.Filter_Stat_Info(stat_num).split('PredCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
-	def PredNodesFile(self, stat_num):
-		return self.Filter_Stat_Info(stat_num).split('PredNodesFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+	def PredNodesFile(self, stat_num, string):
+		return self.Filter_Stat_Info(stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
-	def PredNodesCols(self, stat_num): 
-		return eval(self.Filter_Stat_Info(stat_num).split('PredNodesCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+	def PredNodesCols(self, stat_num, string): 
+		return eval(self.Filter_Stat_Info(stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+
+	def Cols4Plot(self, stat_num): 
+		return eval(self.Filter_Stat_Info(stat_num).split('Cols4Plot = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 
 	# --- Covariance per statistic ---
@@ -219,7 +222,7 @@ class Get_Input:
 			priors = np.load( priorfile )
 		except FileNotFoundError:
 			#print("Using default uniform priors (bounds of training set)")
-			nodes= self.LoadPredNodes(stat_num) 
+			nodes= self.LoadPredNodes(stat_num, 'pred') 
 			priors = []
 			for i in range(nodes.shape[1]):
 				priors.append([ nodes[:,i].min(), nodes[:,i].max() ])
@@ -277,7 +280,9 @@ class Get_Input:
 	def HPs(self, stat_num):
 		# Used in cases where the emulator is being executed within an MCMC
 		hpfile=self.Filter_Stat_Info(stat_num).split('HPs_File = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] 
-		if hpfile[-4:] == ".npy":
+		if hpfile == "None" or '---' in hpfile or '#' in hpfile or not hpfile:
+			HPs = None
+		elif hpfile[-4:] == ".npy":
 			HPs = np.load( hpfile )
 		else:
 			HPs = np.loadtxt( hpfile )
@@ -384,44 +389,76 @@ class Get_Input:
 			Hfactor = 1.
 
 		return cov * (covarea / surveyarea) / Hfactor
+	
 
 
-		
+	def LoadPredNodes(self, stat_num, pred_OR_trial):
+		if "pred" in pred_OR_trial:
+			nodesfile = self.PredNodesFile(stat_num, 'PredNodesFile' )
+			cols = self.PredNodesCols(stat_num, 'PredNodesCols' )
+		elif "trial" in pred_OR_trial:
+			# only will read in Trial Nodes when doing a 1D or 2D likelihood line/grid.
+			nodesfile = self.PredNodesFile(stat_num, 'TrialNodesFile' )
+			cols = self.PredNodesCols(stat_num, 'TrialNodesCols' )
+
+		nodes = np.loadtxt(nodesfile, usecols=(cols))
+		return nodes
+
+		#od_or_td = self.OneD_TwoD_Or_nD()
+		#if od_or_td == "2D":
+			# 2D analysis, read two numbers in
+		#	x_nodes, y_nodes = np.loadtxt(nodesfile, usecols=cols, unpack=True)
+		#	return x_nodes, y_nodes
+
+		#elif od_or_td == "1D":
+			# 1D analysis, read 1 number in
+		#	x_nodes = np.loadtxt(nodesfile, usecols=(cols[0],), unpack=True)
+		#	return x_nodes
+
+		#elif od_or_td == "nD":
+			# >2 dimensions (performing MCMC likelihood): read all in
+		#	nodes = np.loadtxt(nodesfile, usecols=(cols))
+		#	return nodes
+
+		#else:
+		#	print("OneD_TwoD_Or_nD must be set to either 1D, 2D or nD, not %s. Rectify this!" %od_or_td)
+		#	sys.exit(1)
 
 
-	def LoadPredNodes(self, stat_num):
-		nodesfile = self.PredNodesFile(stat_num)
-		cols = self.PredNodesCols(stat_num)
+	def LoadNodes4Plot(self, stat_num):
+		# identify which columns of the TrialNodesFile will be used for the axes
+		# on the contours plot (only used for 1D-line/2D-grid likelihood evaluations)
+	
+		nodesfile = self.PredNodesFile(stat_num, 'TrialNodesFile' )
+		cols = self.Cols4Plot(stat_num)
+
 		od_or_td = self.OneD_TwoD_Or_nD()
-		if od_or_td == "2D":
+		if "2D" in od_or_td:
 			# 2D analysis, read two numbers in
 			x_nodes, y_nodes = np.loadtxt(nodesfile, usecols=cols, unpack=True)
 			return x_nodes, y_nodes
 
-		elif od_or_td == "1D":
+		elif "1D" in od_or_td:
 			# 1D analysis, read 1 number in
 			x_nodes = np.loadtxt(nodesfile, usecols=(cols[0],), unpack=True)
 			return x_nodes
-
-		elif od_or_td == "nD":
-			# >2 dimensions (performing MCMC likelihood): read all in
-			nodes = np.loadtxt(nodesfile, usecols=(cols))
-			return nodes
 
 		else:
 			print("OneD_TwoD_Or_nD must be set to either 1D, 2D or nD, not %s. Rectify this!" %od_or_td)
 			sys.exit(1)
 
+
+
 	def LoadDataNodes(self):
 		nodesfile = self.DataNodesFile()
 		cols = self.DataNodesCols()
 		od_or_td = self.OneD_TwoD_Or_nD()
-		if od_or_td == "2D":
+		if "2D" in od_or_td:
 			# 2D analysis, read two numbers in
 			x_nodes, y_nodes = np.loadtxt(nodesfile, usecols=cols, unpack=True)
 			return x_nodes, y_nodes
 
-		elif od_or_td == "1D":
+		elif "1D" in od_or_td:
 			# 1D analysis, read 1 number in
 			x_nodes = np.loadtxt(nodesfile, usecols=(cols[0],), unpack=True)
 			return x_nodes
@@ -458,9 +495,16 @@ class Get_Input:
 		S8_Bounds = self.S8_Bounds()
 		#print("Applying an S8 prior to the likelihood with bounds: ", S8_Bounds)
 
+		if "Emu" in self.OneD_TwoD_Or_nD():
+			# If emulating a 2D grid, get the x,y coords from the trial nodes file
+			xc, yc = self.LoadNodes4Plot(stat_num)
+		else:
+			# but if reading in pre-made predictions, get x,y from PredNodesFile
+			nodes = self.LoadPredNodes(stat_num, 'pred') 
+			xc = nodes[:,0]
+			yc = nodes[:,1]		
+
 		# Apply the S8 prior to a likelihood:
-		xc, yc = self.LoadPredNodes(stat_num)
-		
 		if "Omega" in self.xLabel() and "sigma" in self.yLabel():
 			S8 = yc * (xc/0.3)**0.5
 		elif "S_8" in self.yLabel():
@@ -477,7 +521,15 @@ class Get_Input:
 	def Marginalise_Over_Dimension(self, LogL, axis, stat_num):
 
 		Lhd = np.exp(-0.5*LogL)
-		xc, yc = self.LoadPredNodes(stat_num)
+
+		if "Emu" in self.OneD_TwoD_Or_nD():
+			# If emulating a 2D grid, get the x,y coords from the trial nodes file
+			xc, yc = self.LoadNodes4Plot(stat_num)
+		else:
+			# but if reading in pre-made predictions, get x,y from PredNodesFile
+			nodes = self.LoadPredNodes(stat_num, 'pred') 
+			xc = nodes[:,0]
+			yc = nodes[:,1]
 
 		if axis == 0:
 			xaxis = np.unique(xc)
@@ -568,11 +620,49 @@ class Get_Input:
 				Train_Pred_Mean = []  # ^same. Need these to preserve order of stored BFs and Train Pred Means.
 				
 			# storing info for each stat in the combination:
-			HPs_store.append( self.HPs( stat ) )
 			Train_x_store.append( Train_x )
 			inTrain_Pred_store.append( inTrain_Pred )
 			Train_BFs_store.append( Train_BFs )
 			Train_Pred_Mean_store.append( Train_Pred_Mean )
+			
+			if self.OneD_TwoD_Or_nD() == "nD":
+				# then it's doing an MCMC, and should look for a file of HPs which may be saved:
+				HPs = self.HPs( stat ) 
+				if HPs == None:
+					# If not HPs_File is set, need to train emulator once to get these (100 restarts):	
+					print( "Running the emulator once with 500 restarts to get the HPs." )
+					Train_Nodes = self.LoadPredNodes(stat, 'pred')
+					GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Train_Nodes )	
+					_,_,HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, 500 )	
+					print(HPs)	
+				HPs_store.append( HPs )
+
+			elif self.OneD_TwoD_Or_nD() == "1DEmu" or self.OneD_TwoD_Or_nD() == "2DEmu":  
+				# It's a 2D grid or 1D line of lhood evaluations & we are 
+				# emulating all trial predictions here:
+				Train_Nodes = self.LoadPredNodes(stat, 'pred')
+				Trial_Nodes = self.LoadPredNodes(stat, 'trial')
+				GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Trial_Nodes )	
+				GP_AVOUT, GP_STDOUT, GP_HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, self.n_restarts_optimizer(stat) )	
+
+				# Un-do the PCA if appropriate
+				if self.Perform_PCA(stat):
+					PCAC = PCA_Class(self.n_components(stat))
+					GP_Pred = PCAC.Convert_PCAWeights_2_Predictions(GP_AVOUT, Train_BFs, Train_Pred_Mean)
+				else:
+					GP_Pred = GP_AVOUT
+
+				# Un-do the transformation:
+				if self.Transform(stat) == "log":  
+					GP_Pred = np.exp( GP_Pred )
+				elif "xy" in self.Transform(stat):
+					GP_Pred = GP_Pred/(Train_x*scale)
+
+				# concatenate the combined statistics
+				if stat==comb[0]:
+					Trial_Pred_store = GP_Pred
+				else:
+					Trial_Pred_store = np.concatenate( (Trial_Pred_store, GP_Pred), axis=1 )
 
 		# store everything to be used by the lnlike function
 		self.HPs_4thiscomb               = HPs_store
@@ -580,7 +670,10 @@ class Get_Input:
 		self.inTrain_Pred_4thiscomb      = inTrain_Pred_store 	 
 		# --- Following only get used if Perform_PCA is true ---
 		self.Train_BFs_4thiscomb         = Train_BFs_store  		 
-		self.inTrain_Pred_Mean_4thiscomb = Train_Pred_Mean_store    
+		self.inTrain_Pred_Mean_4thiscomb = Train_Pred_Mean_store 
+
+		if self.OneD_TwoD_Or_nD() == "1DEmu" or self.OneD_TwoD_Or_nD() == "2DEmu":   
+			return Trial_Pred_store
 
 		return
 
@@ -608,7 +701,7 @@ class Get_Input:
 			Train_Pred_Mean = self.inTrain_Pred_Mean_4thiscomb[count]
 		
 			# Run the emulator		
-			GPR_Class = GPR_Emu( self.LoadPredNodes(stat), inTrain_Pred, np.zeros_like(inTrain_Pred), p.reshape(1,-1) )	
+			GPR_Class = GPR_Emu( self.LoadPredNodes(stat, 'pred'), inTrain_Pred, np.zeros_like(inTrain_Pred), p.reshape(1,-1) )	
 			GP_AVOUT, GP_STDOUT, GP_HPs = GPR_Class.GPRsk(HPs, None, self.n_restarts_optimizer(stat) )	
 
 			# Un-do the PCA if appropriate
@@ -623,6 +716,10 @@ class Get_Input:
 			if self.Transform(stat) == "log":  
 				GP_Pred = np.exp( GP_Pred )
 			elif "xy" in self.Transform(stat):
+				try:
+					scale = float( self.Transform(stat).split('xy')[-1] )
+				except ValueError:
+					scale = 1.
 				GP_Pred = GP_Pred/(Train_x*scale)
 
 			# Combine the predictions
@@ -720,10 +817,18 @@ class Get_Input:
 		
 		plt.figure(figsize=(11,9))
 
-
 		# scroll through the statistics to plot contours for
 		for i in range( len(Use_Stats) ):
-			xc, yc = self.LoadPredNodes(Use_Stats[i])
+
+			if "Emu" in self.OneD_TwoD_Or_nD():
+				# If emulating a 2D grid, get the x,y coords from the trial nodes file
+				xc, yc = self.LoadNodes4Plot(Use_Stats[i])
+			else:
+				# but if reading in pre-made predictions, get x,y from PredNodesFile
+				nodes = self.LoadPredNodes(Use_Stats[i], 'pred') 
+				xc = nodes[:,0]
+				yc = nodes[:,1]
+
 			plt.contour(Log_Lhds_Stats[i], [Contours_Stats[i][0], Contours_Stats[i][1]], 
 						origin='lower', extent = [xc.min(), xc.max(), yc.min(), yc.max()], linewidths=LW, 
 						colors=self.PlotColour(Use_Stats[i]) )
@@ -733,7 +838,17 @@ class Get_Input:
 		# scroll through the combinations of statistics to plot contours for
 		Combine_Stats = self.Combine_Stats()
 		for i in range( len(Combine_Stats) ):
-			xc, yc = self.LoadPredNodes(Combine_Stats[i][0]) # read cosmol coords for the 1st stat of the i'th combination
+
+			if "Emu" in self.OneD_TwoD_Or_nD():
+				# If emulating a 2D grid, get the x,y coords from the trial nodes file
+				xc, yc = self.LoadNodes4Plot(Combine_Stats[i][0]) # read cosmol coords for the 1st stat of the i'th combination
+			else:
+				# but if reading in pre-made predictions, get x,y from PredNodesFile
+				nodes = self.LoadPredNodes(Combine_Stats[i][0], 'pred') 
+				xc = nodes[:,0]
+				yc = nodes[:,1]
+
+			
 			plt.contour(Log_Lhds_Comb[i], [Contours_Comb[i][0], Contours_Comb[i][1]], 
 						origin='lower', extent = [xc.min(), xc.max(), yc.min(), yc.max()], linewidths=LW, 
 						colors=self.PlotCombinedColour(i+1) )
@@ -798,19 +913,31 @@ class Get_Input:
 		# Scroll through combinations of statistics, read in samples & plot their contours.
 		constraints = [] # save and return the mean & asymmetric 68% confidence regions.
 		handles = []
+	
+		# If plot_limits set in parameter file, read them in:
+		try:
+			limits = eval( self.paraminput.split('Plot_Limits = ')[-1].split('#')[0].split('\n')[0] )
+		except SyntaxError:
+			limits = None
+
+		print("The plot limits have been set to: ", limits) 
+
+
 		for i in range( len(self.Combine_Stats()) ):
 			comb_num = i+1
 			# sample_name matches the one used in Master_Run_MCMC
 			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(), self.SurveyCombinedArea(comb_num), 
 																					self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
 			samples = np.load( sample_name )
-
-			if i==0:
-				# establish axes limits:
-				limits=[]
+			
+			if limits == None:
+				# If no limits were read in, set them to the range of the first set of samples.
+				limits = []
 				for j in range(samples.shape[1]):
 					limits.append([ samples[:,j].min(), samples[:,j].max() ])  
+		
 
+			if i==0:
 				# Then it's the first set of samples, establish fig:
 				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
 						plot_contours=True, plot_density=False, plot_datapoints=False,
@@ -872,16 +999,23 @@ class Get_Input:
 		for stat in Use_Stats:
 			print("Producing likelihood for statistic number %s of " %stat, Use_Stats)
 
-			# Load the cov, predictions, data & calc the likelihood on the grid
+			if "Emu" in self.OneD_TwoD_Or_nD():
+				# Read in a training and trial set, and emulate the predictions	
+				preds = self.Assemble_TrainPred_and_HPs( [stat] )
+			else:
+				# Read in some pre-made predictions
+				preds = self.LoadPred(stat)[1] 
+			print(" shape of predictions is ", preds.shape )
+
+			# Load the cov, data & calc the likelihood on the grid
 			cov = self.LoadCov(stat)
-			preds = self.LoadPred(stat)[1]
 			data = self.LoadData(stat)[1]
 			LogL = LogLhd_Gauss(preds, data, cov)
 			# apply an S8 prior to the likeilhood if specified.
 			if self.Apply_S8Prior():
 				LogL = self.Implement_S8Prior(LogL, stat)
 
-			if self.OneD_TwoD_Or_nD() == "2D":
+			if "2D" in self.OneD_TwoD_Or_nD():
 				# reshape the likelihood to 2D
 				LogL = np.reshape(LogL, (-1, self.x_Res() ))
 
@@ -912,14 +1046,22 @@ class Get_Input:
 
 		for i in range(len(Combine_Stats)):
 			print("Producing likelihood for %s'th combination of statistics "%(i+1), Combine_Stats[i])
+
+			if "Emu" in self.OneD_TwoD_Or_nD():
+				# Read in a training and trial set, and emulate the predictions	
+				preds = self.Assemble_TrainPred_and_HPs( Combine_Stats[i] )
+			else:
+				# Read in some pre-made predictions
+				preds = self.CombinePreds( Combine_Stats[i] )
+			print(" shape of predictions is ", preds.shape )
+
 			cov = self.LoadCovCombined(i+1)
-			preds = self.CombinePreds( Combine_Stats[i] )
 			data = self.CombineData( Combine_Stats[i] )
 			LogL = LogLhd_Gauss(preds, data, cov)
 			if self.Apply_S8Prior():
 				LogL = self.Implement_S8Prior(LogL, Combine_Stats[i][0])
 
-			if self.OneD_TwoD_Or_nD() == "2D":
+			if "2D" in self.OneD_TwoD_Or_nD():
 				# reshape the likelihood to 2D
 				LogL = np.reshape(LogL, (-1, self.x_Res() ))
 
