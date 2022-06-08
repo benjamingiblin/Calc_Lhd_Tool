@@ -630,10 +630,10 @@ class Get_Input:
 				HPs = self.HPs( stat ) 
 				if HPs == None:
 					# If not HPs_File is set, need to train emulator once to get these (100 restarts):	
-					print( "Running the emulator once with 500 restarts to get the HPs." )
+					print( "Running the emulator once with 1000 restarts to get the HPs." )
 					Train_Nodes = self.LoadPredNodes(stat, 'pred')
 					GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Train_Nodes )	
-					_,_,HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, 500 )	
+					_,_,HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, 1000 )	
 					print(HPs)	
 				HPs_store.append( HPs )
 
@@ -962,7 +962,7 @@ class Get_Input:
 			for j in range( samples.shape[1] ):
 				mean = corner.quantile( samples[:,j], [0.5] )[0]
 				upper = corner.quantile( samples[:,j], [0.84] )[0] - mean
-				lower = corner.quantile( samples[:,j], [0.16] )[0] - mean
+				lower = mean - corner.quantile( samples[:,j], [0.16] )[0] 
 				tmp_constraints[j] = np.array([ mean, upper, lower ])
 			constraints.append( tmp_constraints )
 		
