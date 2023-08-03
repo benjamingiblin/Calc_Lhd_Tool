@@ -1,0 +1,130 @@
+# Parameter file for input to Cosmic_Banana.py
+
+# --------------------------------------------------------------------- GENERAL ANALYSIS ------------------------------------------------------------------------------
+Use_Stats = [1]
+Combine_Stats = []
+
+OneD_TwoD_Or_nD = nD
+			# Variable specifying if it's a 2D grid, 1D line or nD MCMC likelihood problem.
+
+DataNodesFile = <address_of_file_containing_true_cosmology>
+			# this file contains the (Omega_m, S_8, h, log(f_R0)) parameters for the data (i.e. the truth) 
+			# formatted as a simple ascii/text file, 1 row and 4 columns. 
+
+DataNodesCols = [0,1,2,3]
+			# Which columns to pull out of DataNodesFile
+			
+
+Apply_Hartlap = True
+
+# Plotting variables
+Plot_Limits = [[0.14,0.45],[0.70,0.90],[0.55,0.85],[-7.2,-4.5]]
+DataLabel = ''
+nLabels = [r'$\Omega_{\rm{m}}$',r'$S_8$',r'$h$',r'$\log_{10}{(f_{R0})}$']
+savedirectory = Results_MCMC/CNN
+
+
+# --------------------------------------------------------------------- MCMC SETTINGS ------------------------------------------------------------------------------
+nwalkers = 120					
+burn_steps = 200			
+real_steps = 800
+
+
+
+# --------------------------------------------------------------------- STATISTIC 1 ------------------------------------------------------------------------------
+
+nBins = 4                                                                              
+						# Number of bins in this statistic (4 for our 4 cosmol params)
+Bins_To_Use = range(4)  
+						# Which bins in prediction to use. range(<nBins>) for all
+
+PredFile = <address_of_average_CNN_prediction_for_each_of_the_50_FORGE_Cosmols>
+						# This should be in numpy pickled format (extension .npy)
+						# with 4 columns (Omega_m, S_8, h, log(f_R0) ) & 50 rows
+						# Note, you make a .npy file just be saving a numpy array with numpy.save()
+
+PredIDs = 
+						# Ignore this option
+						# ID numbers to replace 'XXXX'. 
+						# If IDs are not numbers, or not sequential, put list here.
+						# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = [0,1]							
+						# Ignore this too.
+						# [OPTIONAL} If specified: Which 2 columns to read in PredFile 
+						# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+
+PredNodesFile = <address_of_file_containing_50_True_FORGE_cosmologies>
+						# Note this should be a simple ascii/text file which you might need to make yourself (4 columns, 50 rows)
+						# Don't give it the .npy file, or it will break.		
+
+PredNodesCols = [0,1,2,3]
+						# Which columns to pull out of PredNodesFile
+
+
+CovFile = <address_of_the_covariance_matrix_you_made_from_CNN_predictions_for_900odd_SLICS_realisations>
+						# This should be in pickled numpy format (*.npy)
+
+CovArea = 100													
+						# The sky area this covariance was measured on (ignore)
+SurveyArea = 1000										
+						# Survey size you want to scale the cov to (ignore)
+Nreal = 960
+
+DataFile = <address_of_avg_CNN_prediction_for_the_SLICS_realisations>
+						# This should be 4 ROWS - (Omega_m, S_8, h, f_R0 going downwards)
+						# (CNN's prediction for 4 cosmols, avg'd over the 900odd realisations)
+						# (simple ascii/text file format)
+DataCols = [0]
+
+PlotLabel = r'CNN'
+PlotColour = 'blue'
+
+# --- EMULATOR SETTINGS --- #
+
+# Can ignore the following:
+Perform_PCA = False
+n_components = 4    
+n_restarts_optimizer = 0
+
+HPs_File =
+
+
+
+
+# --------------------------------------------------------------------- END OF STATISTICS ------------------------------------------------------------------------------
+
+
+
+
+
+
+
+#x#x#x#x#x Combinations #x#x#x#x#x
+# CAN IGNORE ALL OF THE FOLLOWING
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = 
+
+CovArea = 100													
+						# The sky area this covariance was measured on
+SurveyArea = 1000		
+						# Survey size you want to scale the cov to.
+
+Nreal = 715
+
+PlotLabel = r'Combined statistic'
+PlotColour = 'lightgreen'
+
+SmoothContour = False            
+                               # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2
+								# standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = 
+
+
+
+
+
+
