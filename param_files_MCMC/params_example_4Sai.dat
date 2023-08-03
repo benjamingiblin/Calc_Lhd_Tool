@@ -1,8 +1,8 @@
 # Parameter file for input to Cosmic_Banana.py
 
 # --------------------------------------------------------------------- GENERAL ANALYSIS ------------------------------------------------------------------------------
-Use_Stats = [1]
-Combine_Stats = []
+Use_Stats = []
+Combine_Stats = [[1]]
 
 OneD_TwoD_Or_nD = nD
 			# Variable specifying if it's a 2D grid, 1D line or nD MCMC likelihood problem.
@@ -101,27 +101,27 @@ HPs_File =
 
 
 #x#x#x#x#x Combinations #x#x#x#x#x
-# CAN IGNORE ALL OF THE FOLLOWING
 
 # --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
-CovFile = 
+CovFile = <address_of_the_covariance_matrix_you_made_from_CNN_predictions_for_900odd_SLICS_realisations>
+						# This should match the other CovFile line above exactly. 
 
 CovArea = 100													
 						# The sky area this covariance was measured on
 SurveyArea = 1000		
 						# Survey size you want to scale the cov to.
 
-Nreal = 715
+Nreal = 960
 
-PlotLabel = r'Combined statistic'
-PlotColour = 'lightgreen'
+PlotLabel = r'CNN'
+PlotColour = 'blue'
 
-SmoothContour = False            
+SmoothContour = True            
                                # Can optionally Gaussian smooth the likelihood contours if they're noisy
-SmoothScale = 2
+SmoothScale = 1
 								# standev of smoothin kernel, in units of pxls on the grid.
 
-CombName = 
+CombName = CNN
 
 
 
