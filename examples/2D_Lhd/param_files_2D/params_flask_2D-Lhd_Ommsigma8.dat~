@@ -1,0 +1,148 @@
+# Parameter file for input to 2D likelihood code
+
+# --------------------------------------------------------------------- GENERAL ANALYSIS ------------------------------------------------------------------------------
+Use_Stats = [1,2]				
+								# Which statistics in this params_file to use in analysis
+Combine_Stats = []			
+								# Which statistics to combine, e.g. [[1,2,3], [4,5]] means 
+								# combine stats 1&2&3 and separately combine 4&5. Empty means no combinations.
+
+OneD_TwoD_Or_nD = 2D_Lhd		
+								
+x_Res = 50						
+y_Res = 50						
+								# Variable specifying if it's a 2D grid, 1D line or nD MCMC likelihood problem.
+								# if OneD_Or_TwoD_nD is set to 2D, y_Res is inferred from num of predictions & x_Res.
+
+DataNodesFile = examples/2D_Lhd/Data/Cosmology_Data_Omm_sigm8_h_w0.txt
+DataNodesCols = [0,1]			
+								# Which columns to pull out of DataNodesFile
+					
+Apply_S8Prior = True 			
+								# For a Omega_m-sigma_8 grid, option to apply S_8 prior
+S8_Bounds = [0.55,1.0]
+
+# Plotting variables
+DataLabel = ''
+xLabel = r'$\Omega_{\rm m}$'
+yLabel = r'$\sigma_8$'
+plot_savename = examples/2D_Lhd/Results/Plot_Lhd_Omm-sigma8.png
+
+
+# --------------------------------------------------------------------- STATISTIC 1 ------------------------------------------------------------------------------
+
+nBins = 6 					
+							# Number of bins in this statistic, before cutting with Bins_To_Use
+Bins_To_Use = range(1,5)		
+							# Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = examples/2D_Lhd/Predictions/PDF_linear_nofz1_SS14arcmin_Cosmols1-2500.npy
+							# General Filename of predictions 
+							# with 'XXXX' replacing the ID of the separate predictions
+							# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 					
+							# ID numbers to replace 'XXXX' (only used if PredFile is not pickle ending .npy) 
+							# If IDs are not numbers, or not sequential, put list here.
+							# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = [0,1]			
+							# [OPTIONAL] If specified: Which 2 columns to read in PredFile 
+							# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+							# (only used if PredFile is not pickle ending .npy)
+
+PredNodesFile = examples/2D_Lhd/Predictions/Cosmologies_Omm_sigm8_h_w0.txt
+							# File for coords (nodes) of the predictions
+							# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,1]		# Which columns to pull out of PredNodesFile
+
+
+CovFile = examples/2D_Lhd/Cov/Cov_PDF_linear_nofz1_SS14arcmin_CosmolData_Nreal15000.npy
+							# covariance matrix in pickled (.npy) format
+							# should be of nBins x nBins dimensionality
+CovArea = (4*np.pi*(180./np.pi)**2)		
+							# The sky area [deg^2] this covariance was measured on (here full sky)
+SurveyArea = 50			# Survey size you want to scale the cov to [deg^2]
+
+DataFile = examples/2D_Lhd/Data/PDF_linear_nofz1_SS14arcmin_CosmolData.txt
+DataCols = [0,1]
+
+PlotLabel = r'PDF$(\kappa)$ (smoothing:14 arcmin)'
+PlotColour = 'orange'
+
+
+# --------------------------------------------------------------------- STATISTIC 2 ------------------------------------------------------------------------------
+
+nBins = 6 					
+							# Number of bins in this statistic, before cutting with Bins_To_Use
+Bins_To_Use = range(6)		
+							# Which bins in prediction to use. range(<nBins>) for all.
+
+PredFile = examples/2D_Lhd/Predictions/PDF_linear_nofz1_SS60arcmin_Cosmols1-2500.npy
+							# General Filename of predictions 
+							# with 'XXXX' replacing the ID of the separate predictions
+							# Or one pickled file (*.npy) containing all predictions
+
+PredIDs = 					
+							# ID numbers to replace 'XXXX' (only used if PredFile is not pickle ending .npy) 
+							# If IDs are not numbers, or not sequential, put list here.
+							# e.g. ['a','b','c'], [1,3,5,7,9,11,...]
+
+PredCols = [0,1]			
+							# [OPTIONAL] If specified: Which 2 columns to read in PredFile 
+							# Assumed order: [x_col,y_col]. Else assumes x_col=0, y_col=1
+							# (only used if PredFile is not pickle ending .npy)
+
+PredNodesFile = examples/2D_Lhd/Predictions/Cosmologies_Omm_sigm8_h_w0.txt
+							# File for coords (nodes) of the predictions
+							# Assumes each row is different node, columns are the different dimensions
+PredNodesCols = [0,1]		# Which columns to pull out of PredNodesFile
+
+
+CovFile = examples/2D_Lhd/Cov/Cov_PDF_linear_nofz1_SS60arcmin_CosmolData_Nreal15000.npy
+							# covariance matrix in pickled (.npy) format
+							# should be of nBins x nBins dimensionality
+CovArea = (4*np.pi*(180./np.pi)**2)		
+							# The sky area [deg^2] this covariance was measured on (here full sky)
+SurveyArea = 100			
+							# Survey size you want to scale the cov to [deg^2]
+
+DataFile = examples/2D_Lhd/Data/PDF_linear_nofz1_SS60arcmin_CosmolData.txt
+DataCols = [0,1]
+
+PlotLabel = r'PDF$(\kappa)$ (smoothing:60 arcmin)'
+PlotColour = 'darkblue'
+
+SmoothContour = True
+SmoothScale = 0
+
+# MUST LEAVE THE FOLLOWING LINE IN FOR CODE TO CORRECTLY FILTER STATISTICS INFO FROM THE COMBINATION-OF-STATISTICS INFO
+# --------------------------------------------------------------------- END OF STATISTICS ------------------------------------------------------------------------------
+
+
+# --------------------------------------------------------------------- COMBINATION 1 ------------------------------------------------------------------------------
+CovFile = examples/2D_Lhd/Cov/CovCombined_PDF_linear_nofz1_SS14arcmin-60arcmin_CosmolData_Nreal15000.npy
+												# The combined covariance for this combination of stats
+CovArea = (4*np.pi*(180./np.pi)**2)				
+												# The sky area [deg^2] this covariance was measured on (here full sky)
+SurveyArea = 500								
+												# Survey size you want to scale the cov to [deg^2]
+
+PlotLabel = r'PDF$(\kappa)$ (combined)'
+PlotColour = 'magenta'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
