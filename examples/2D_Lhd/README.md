@@ -3,12 +3,14 @@
 
 ## EXAMPLE 1 - A 2D-GRID PARAMETER INFERENCE PROBLEM
 
+### Overview
+
 The git repository contains a 2D parameter inference problem in *examples/2D_Lhd/*. This can be executed with:
 ```
 python Calc_Lhd_2D.py examples/2D_Lhd/param_files_2D/params_flask_2D-Lhd_Ommsigma8.dat
 ```
 
-This example performs a mock cosmic shear (weak lensing) analysis, constraining Omegam and sigma8 using the probability density of convergence maps (or *lensing PDFs*) as the statistic of choice. This is essentially a simplified version of the analysis presented in Figure 3 of [Giblin et al. 2023][1]. The model predictions, data, and covariance matrices were all produced using FLASK [Xavier et al. 2017][2].
+This example performs a mock cosmic shear (weak lensing) analysis, constraining the cosmological parameters Omegam and sigma8 using the probability density of convergence maps (or *lensing PDFs*) as the statistic of choice. This is essentially a simplified version of the analysis presented in the right-hand panel of Figure 3 of [Giblin et al. 2023][1]. The model predictions, data, and covariance matrices were all measured from full-sky noise-free lognormal convergence maps produced using FLASK [(Xavier et al. 2017)][2].
 
 The input parameter file contains information on two statistics, appearing under the STATISTIC 1 and STATISTIC 2 banners. Statistic 1 and 2 respectively are lensing PDFs measured from maps smoothed on the scale of 14arcmin and 60arcmin respectively. The first two arguments of the parameter file are:
 ```
@@ -69,13 +71,13 @@ The covariance matrix, produced with 1000 FLASK realisations at the true cosmolo
 ```
 CovFile = examples/2D_Lhd/Cov/Cov_PDF_linear_nofz1_SS14arcmin_CosmolData_Nreal1000.npy
 ```
-This covariance (as with the predictions and data) was measured on *full-sky* HealPix maps [Zonca et al. 2019][3]. But we can scale the covariance to correspond to a desired sky area using these arguments:
+This covariance (as with the predictions and data) was measured on *full-sky* HealPix maps [(Zonca et al. 2019)][3]. But we can scale the covariance to correspond to a desired sky area using these arguments:
 ```
 CovArea = (4*np.pi*(180./np.pi)**2)	# The sky area [deg^2] this covariance was measured on (here full sky)
 SurveyArea = 50				# Survey size you want to scale the cov to [deg^2]
 ```
 This will scale the covariance by the ratio *(SurveyArea/CovArea)*. Note that python numpy syntax (*np.pi*) is used in specifying CovArea, but one could equivalently have just put 41253.
-The Hartlap correction [Hartlap et al. 2007][4], used to combat the noise bias which affects the inversion of covariance matrices estimated from a finite number of realisations, is applied if
+The Hartlap correction [(Hartlap et al. 2007)][4], used to combat the noise bias which affects the inversion of covariance matrices estimated from a finite number of realisations, is applied if
 ```
 Apply_Hartlap = True
 ```

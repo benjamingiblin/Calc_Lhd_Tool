@@ -29,6 +29,6 @@ git clone https://github.com/benjamingiblin/Calc_Lhd_Tool.git .
 pip install <package_name>
 ```
 
-Examples and associated READMEs can be found in the *examples/2D_Lhd* and *examples/MCMC* directories.
+To get to grips with how the code works, users are encouraged to run two examples, the READMEs for which can be found in *examples/2D_Lhd* (example 1) and *examples/MCMC* (example 2).
 
 
