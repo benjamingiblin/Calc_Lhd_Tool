@@ -29,29 +29,6 @@ git clone https://github.com/benjamingiblin/Calc_Lhd_Tool.git .
 pip install <package_name>
 ```
 
-
-## EXAMPLE 1 - A 2D-GRID PARAMETER INFERENCE PROBLEM
-
-The git repository contains a 2D parameter inference problem in *examples/2D_Lhd/*. This can be executed with:
-```
-python Calc_Lhd_2D.py examples/2D_Lhd/param_files_2D/params_flask_2D-Lhd_Ommsigma8.dat
-```
-
-This example performs a mock cosmic shear (weak lensing) analysis, constraining Omegam and sigma8 using the probability density of convergence maps (or *lensing PDFs*) as the statistic of choice. This is essentially a simplified version of the analysis presented in Figure 3 of [Giblin et al. 2023][1]
-
-The input parameter file contains information on two statistics, STATISTIC 1 and STATISTIC 2. The first two arguments of the parameter file are:
-```
-Use_Stats = [1,2]
-Combine_Stats = [[1,2]]
-```
-The first arg tells the code you would like to produce the constraints for statistic 1 and 2 separately. The second arg tells the code to also produce the constraints from their combination. If more statistics were presented in the file, one could produce additional constraints with, e.g.,:
-```
-Use_Stats = [1,2,3,4]		# produce separate constraints for stats 1-4
-Combine_Stats = [[1,2],[3,4]]   # combine stats 1&2, and then combine 3&4.
-```
+Examples and associated READMEs can be found in the *examples/2D_Lhd* and *examples/MCMC* directories.
 
 
-
-
-
-[1]: https://arxiv.org/abs/2211.05708 "Giblin et al."
