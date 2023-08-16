@@ -1,15 +1,45 @@
-# Calc_Lhd_Tool - a one-stop code to perform MCMC or 2D-grid likelihood evaluations using a Gaussian process emulator
+# Calc_Lhd_Tool
+## A one-stop code to perform MCMC or 2D-grid Bayesian parameter inference using a Gaussian process emulator in Python
 
 This software package samples the posterior probability distributions either with a Markov Chain Monte Carlo (MCMC; for dim>2) or on a 2D grid.
 
 The basic command to execute the software is:
 
 ```python Calc_Lhd_MCMC.py <parameter_file>		# for an N-dimension MCMC sampling of the posterior
+```
+
+Or
+
+```
 python Calc_Lhd_2D.py <parameter_file>			# for a 2D grid-based sampling of the posterior
 ```
 
-The user only needs to edit the input <parameter_file> which contains, amongst other things, the file address for a data vector, covariance matrix, and model predictions used to train a Gaussian process emulator, for 1 or more statistics. The statistics specified in the parameter file (perhaps from different redshift bins or cosmological probes) can easily be combined, or subject to scale cuts, as specified in the parameter file.
+The user only needs to edit the input <parameter_file> to specify the file addresses of a data vector, covariance matrix, model predictions and corresponding input (often cosmological) parameters, and the scale cuts to apply. In the case of the 2D likelihood code, the model predictions are assumed to be defined on a grid, whereas for the MCMC code, the model predictions are used to train a Gaussian process regression emulator to interpolate across the N-dimensional space. The emulator is trained before the MCMC begins and is then executed at every point in the chain to produce a prediction. In both cases, the 2D and MCMC setups, you can specify arbitrary combinations of the statistics in your parameter file, as long as you provide a corresponding combined covariance matrix. This allows you to easily compute the combined constraints from different cosmological probes, or perform tomography in a weak lensing analysis. 
 
-The 
+## Installation
 
-runs Markov Chain Monte Carlo (MCMC) sampling of a posterior distribution, using data, covariance, and model predictions specified by the user. The model predictions are used to train a Gaussian process regression emulator before the MCMC begins. The MCMC sampler then uses the trained emulator to make a prediction at each step in the chain, and inputs this into a Gaussian likelihood along with the covariance and data vector, in order to sample the posterior. You can easily combine statistics (e.g. from different probes or redshift bins), omit certain scales, and apply priors.  
+Navigate to whether on your machine you would like to install the code and run:
+```
+git clone https://github.com/benjamingiblin/Calc_Lhd_Tool.git .
+```
+
+**Dependencies:** it is assumed that you have an up-to-date Anaconda distribution, which contains practically everything the code needs to run. If you encounter an error that a required python package is missing, this can easily be solved with:
+```
+pip install <package_name>
+```
+
+
+## EXAMPLE 1 - A 2D-GRID PARAMETER INFERENCE PROBLEM
+
+The git repository contains a 2D parameter inference problem in *examples/2D_Lhd/*. This can be executed with:
+```
+python Calc_Lhd_2D.py examples/2D_Lhd/param_files_2D/params_flask_2D-Lhd_Ommsigma8.dat
+```
+
+This example performs a mock cosmic shear (weak lensing) analysis, constraining Omegam and sigma8 using the probability density of convergence maps (or *lensing PDFs*) as the statistic of choice. This is essentially a simplified version of the analysis presented in Figure of [Giblin et al. 2023][1]
+
+The input parameter file...
+
+
+
+[1]: https://arxiv.org/abs/2211.05708 "Giblin et al."

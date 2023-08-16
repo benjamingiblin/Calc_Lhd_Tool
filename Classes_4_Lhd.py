@@ -356,6 +356,7 @@ class Get_Input:
 		if self.Apply_Hartlap():
 			Nreal = self.Nreal(stat_num)
 			Hfactor = self.Calc_Hartlap(Nreal, cov.shape[0])
+			print("Applying Hartlap scaling to covariance.")
 		else:
 			Hfactor = 1.
 		return cov * (covarea / surveyarea) / Hfactor	
@@ -558,7 +559,7 @@ class Get_Input:
 				try:
 					Sum_Prob += (interp_function(Mean + i*dx) + interp_function(Mean - i*dx))*dx 
 				except ValueError:
-					print( "Hit the wall searching for the %s prob-fraction with this statistic/combo of stats beginning with stat %s. " %(fraction,stat_num))
+					print( "Hit the wall searching for the %s prob-fraction on dimension %s. " %(fraction,axis))
 					print( "Only found %.2f of it. Returning this answer." %(Sum_Prob/Total_Prob) )
 					return i*dx
 				if Sum_Prob > fraction*Total_Prob:
@@ -614,6 +615,8 @@ class Get_Input:
 				except ValueError:
 					scale = 1.
 				Train_Pred *= (Train_x*scale)
+			elif "None" in self.Transform(stat) or '------' in self.Transform(stat):
+				print("Performing no transform on the input training data.")
 			else:
 				print( "Only log and xyN (x-TIMES-y-TIMES-N) transforms are supported. Not %s. EXITING." %self.Transform(stat) )
 				sys.exit()
@@ -819,9 +822,15 @@ class Get_Input:
 	# ------------------------------------------- PLOTTING FUNCTIONS ------------------------------------------------------
 	def Plot_2D_Lhd(self, Log_Lhds_Stats, Contours_Stats, 
 							  Log_Lhds_Comb, Contours_Comb):
-		# Plot a 2D likelihood grid
+
+		font = {'family' : 'serif',
+                'weight' : 'normal',
+                        'size'   : 20}                                                                                                         
+		plt.rc('font', **font)
+
+                # Plot a 2D likelihood grid
 		Use_Stats = self.Use_Stats()
-		LW = 4 # Linewidths
+		LW = 2 # Linewidths
 		handles = []
 		
 		plt.figure(figsize=(11,9))
@@ -861,8 +870,8 @@ class Get_Input:
 			plt.contour(Log_Lhds_Comb[i], [Contours_Comb[i][0], Contours_Comb[i][1]], 
 						origin='lower', extent = [xc.min(), xc.max(), yc.min(), yc.max()], linewidths=LW, 
 						colors=self.PlotCombinedColour(i+1), linestyles=self.PlotCombinedLS(i+1) )
-			handles.append( mlines.Line2D([],[],color=self.PlotCombinedColour(i+1), linestyle=self.PlotCombinedLS(i+1) ),
-                                                      linewidth=LW, label=self.PlotCombinedLabel(i+1)) 
+			handles.append( mlines.Line2D([],[],color=self.PlotCombinedColour(i+1), linestyle=self.PlotCombinedLS(i+1),
+                                                      linewidth=LW, label=self.PlotCombinedLabel(i+1)) ) 
 
 		# Plot the truth			
 		x_data, y_data = self.LoadDataNodes()
@@ -1032,6 +1041,7 @@ class Get_Input:
 				# reshape the likelihood to 2D
 				LogL = np.reshape(LogL, (-1, self.x_Res() ))
 
+			print("SmoothContour is...", self.SmoothContour(stat))
 			if self.SmoothContour(stat):
 				SS = self.SmoothScale(stat)
 				print("Smoothing contour for statistic %s with sigma=%s [pxls]" %(stat, SS))
