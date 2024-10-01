@@ -30,6 +30,7 @@ def Find_Height_At_Contour_Area(Grid, Area):
 	# scroll down from the peak of the distribution: adding the heights = adding the volume
 	# since each column has the same base area. Stop when you've reached queried Area
 	for i in range(len(sorted_L)):
+		#print(" found this proportion of area: %.1f " %(np.sum(sorted_L[:i]) / Total_Prob) )
 		if np.sum(sorted_L[:i]) / Total_Prob > Area:
 			Height = sorted_L[i-1]                      
 			break

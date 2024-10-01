@@ -947,6 +947,12 @@ class Get_Input:
 			# sample_name matches the one used in Master_Run_MCMC
 			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(),self.SurveyCombinedArea(comb_num),self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
 			samples = np.load( sample_name )
+
+			if self.SmoothCombinedContour(comb_num):
+				SS = self.SmoothCombinedScale(comb_num)
+				print("Read in contour smoothing scale of %s pxls" %SS)
+			else:
+				SS=1
 			
 			if limits == None:
 				# If no limits were read in, set them to the range of the first set of samples.
@@ -958,8 +964,8 @@ class Get_Input:
 			if i==0:
 				# Then it's the first set of samples, establish fig:
 				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
-						plot_contours=True, plot_density=False, plot_datapoints=False,
-						smooth=1, levels=(0.68,0.95), truths=self.LoadDataNodes(), truth_color='black', 
+						plot_contours=True, plot_density=False, plot_datapoints=False, smooth=SS,
+						levels=(0.68,0.95), truths=self.LoadDataNodes(), truth_color='black', 
 						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw, 
 										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
@@ -968,8 +974,8 @@ class Get_Input:
 			else:
 				# sequential set of contours - overplot them
 				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
-						plot_contours=True, plot_density=False, plot_datapoints=False,
-						smooth=1, levels=(0.68,0.95), truths=self.LoadDataNodes(),
+						plot_contours=True, plot_density=False, plot_datapoints=False, smooth=SS,
+						levels=(0.68,0.95), truths=self.LoadDataNodes(),
 						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw,
 										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
