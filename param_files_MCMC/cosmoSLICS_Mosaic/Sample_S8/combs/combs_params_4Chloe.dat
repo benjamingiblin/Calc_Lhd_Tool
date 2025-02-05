@@ -61,9 +61,9 @@ savedirectory = Results_MCMC/DatacosmoSLICS_50LOS_Mosaic/SNR_vs_xip_tomo15bins_O
 
 
 # --------------------------------------------------------------------- MCMC SETTINGS ------------------------------------------------------------------------------
-nwalkers = 60
-burn_steps = 100			
-real_steps = 400
+nwalkers = 12 #60
+burn_steps = 10 #100			
+real_steps = 20 #400
 
 
 

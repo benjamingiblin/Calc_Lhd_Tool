@@ -34,7 +34,7 @@ Run_MCMC = True
 
 Navigate to whether on your machine you would like to install the code and run:
 ```
-git clone https://github.com/benjamingiblin/Calc_Lhd_Tool.git .
+git clone -b Systematics https://github.com/benjamingiblin/Calc_Lhd_Tool.git
 ```
 
 **Dependencies:** it is assumed that you have an up-to-date Anaconda distribution, which contains practically everything the code needs to run. If you encounter an error that a required python package is missing, this can easily be solved with:
