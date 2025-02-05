@@ -481,8 +481,8 @@ class PCA_Class:
 		return BFs, Weights, Recons
 
 	# Accept some basis functions, BFs, Data to perform PCA on,
-    # + the mean (in each bin) of the data for which the BFs were identified,
-    # and manually do the PC Reconstruction
+	# + the mean (in each bin) of the data for which the BFs were identified,
+	# and manually do the PC Reconstruction
 	def PCA_ByHand(self, BFs, Data, data_Mean):
 		Data_MinusMean = np.empty_like( Data )
 		for i in range(len(Data[0,:])):

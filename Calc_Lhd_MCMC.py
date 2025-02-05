@@ -13,9 +13,16 @@ from Classes_4_Lhd import Get_Input
 
 Run_MCMC = False
 
-paramfile = sys.argv[1]
-GI = Get_Input(paramfile)   
+paramfile_stats = sys.argv[1]
+paramfile_combs = sys.argv[2]
 
+# read in systematics file if specified
+try:
+	paramfile_sys = sys.argv[3]
+except IndexError:
+	paramfile_sys = None
+
+GI = Get_Input(paramfile_stats, paramfile_combs, paramfile_sys)   
 if Run_MCMC:
 	# RUN THE MCMC ANEW....
 	Samples_Stats, Savename_Stats, Samples_Comb, Savename_Comb = GI.Run_Analysis_MCMC()
@@ -25,7 +32,7 @@ else:
 	# ....OR.....
 	# ...LOAD THE PRE-SAVED SAMPLES AND PLOT THEM
 	savename_plot = None            # setting savename of plot to None means it will use default
-	Constraints_Comb = GI.Plot_MCMC_Lhd_Multiple(None)    
+	Constraints_Comb = GI.Plot_MCMC_Lhd_Multiple(savename_plot)    
 
 
 

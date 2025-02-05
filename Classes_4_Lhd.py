@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import os
 
+from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
@@ -23,74 +24,102 @@ from scipy.interpolate import interp1d
 # Emulator classes used if performing an MCMC, emulating at each step.
 from Classes_4_GPR import PCA_Class, GPR_Emu
 
+# This function suppresses the warnings from GP training
+def warn(*args, **kwargs):
+	pass
+import warnings
+warnings.warn = warn
+
 # Class to read analysis information from input parameter file
 # e.g. predictions, covariance, data, type of statistic, plotting label
 class Get_Input:
 
 	# ------------------------------------------- READ IN PARAMS ------------------------------------------------------
-	def __init__(self, paramfile):
-		self.paramfile = paramfile
-		self.paraminput = open(self.paramfile).read()
+	def __init__(self, pfile_stats, pfile_combs, pfile_sys = None):
+		self.pfile_stats = pfile_stats
+		self.pfile_combs = pfile_combs
+		self.pfile_sys = pfile_sys
+		self.pinput_stats = open(self.pfile_stats).read()
+		self.pinput_combs = open(self.pfile_combs).read()
+
+		# Read sys file(s) if provided
+		if type(pfile_sys) != type(None):
+			self.pfile_sys = pfile_sys.split(',') # turn input into array of strings (1 elem long if just 1 psys file)
+			self.pinput_sys = [] # to store string contents of psys files
+			for ps in range(len(self.pfile_sys)): self.pinput_sys.append( open(self.pfile_sys[ps]).read() )
 
 		# The following are things used by the lnlike function in MCMC sampling
 		# initialised as None, but set once at the start of sampling, to save time
 		# by avoiding reading them from file at every step in the chain.
-		self.Train_x_4thiscomb           = None		 # x-coords of the emulator training set (e.g. theta [arcmin], k [h/Mpc] )
-		self.inTrain_Pred_4thiscomb      = None   	 # (Transformed) Training preds for emulator, stacked for a given combination of stats.
+		self.Train_x_4thiscomb 		 = None		 # x-coords of the emulator training set (e.g. theta [arcmin], k [h/Mpc] )
+		self.inTrain_Pred_4thiscomb 	 = None   	 # (Transformed) Training preds for emulator, stacked for a given combination of stats.
 		# --- Following only get used if Perform_PCA is true ---
-		self.Train_BFs_4thiscomb         = None		 # Basis functions for this training pred set, stacked for given stats combo.
+		self.Train_BFs_4thiscomb 	 = None		 # Basis functions for this training pred set, stacked for given stats combo.
 		self.inTrain_Pred_Mean_4thiscomb = None      # inTrain_Pred_4thiscomb avg'd across the predictions
-		self.HPs_4thiscomb               = None      # stacked hyperparameters for this combination of stats.
-		
+		self.HPs_4thiscomb 		 = None      # stacked hyperparameters for this combination of stats.
+
+		# Same but now to store info related to the Systematic predictions:
+		self.inSys_Pred_4thiscomb 	= None 
+		self.Sys_BFs_4thiscomb 		= None	
+		self.inSys_Pred_Mean_4thiscomb 	= None 
+		self.Sys_HPs_4thiscomb 		= None 
 
 	# --- what stats to use ---
 	def Use_Stats(self): 
-		return eval(self.paraminput.split('Use_Stats = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
+		return eval(self.pinput_stats.split('Use_Stats = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
 	def Combine_Stats(self): 
-		return eval(self.paraminput.split('Combine_Stats = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
+		return eval(self.pinput_combs.split('Combine_Stats = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
 
 	# --- 2D or 1D likelihood evaluations ---
 	def OneD_TwoD_Or_nD(self):
-		return self.paraminput.split('OneD_TwoD_Or_nD = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		return self.pinput_combs.split('OneD_TwoD_Or_nD = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
 	def x_Res(self):
-		return int(self.paraminput.split('x_Res = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.pinput_stats.split('x_Res = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 	def y_Res(self):
-		return int(self.paraminput.split('y_Res = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.pinput_stats.split('y_Res = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 
 	# --- Data nodes ---
 	def DataNodesFile(self):
-		return self.paraminput.split('DataNodesFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		return self.pinput_combs.split('DataNodesFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
 	def DataNodesCols(self): 
-		return eval(self.paraminput.split('DataNodesCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
+		return eval(self.pinput_combs.split('DataNodesCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
 
 	# --- 2D vs 1D likelihood evaluations ---
 	def DataLabel(self):
-		return eval( self.paraminput.split('DataLabel = ')[-1].split('#')[0].split('\n')[0] )
+		return eval( self.pinput_combs.split('DataLabel = ')[-1].split('#')[0].split('\n')[0] )
 
 	def xLabel(self):
-		return eval( self.paraminput.split('xLabel = ')[-1].split('#')[0].split('\n')[0] )
+		return eval( self.pinput_combs.split('xLabel = ')[-1].split('#')[0].split('\n')[0] )
 
 	def yLabel(self):
-		return eval( self.paraminput.split('yLabel = ')[-1].split('#')[0].split('\n')[0] )
+		return eval( self.pinput_combs.split('yLabel = ')[-1].split('#')[0].split('\n')[0] )
 
 	def nLabels(self):
-		return eval( self.paraminput.split('nLabels = ')[-1].split('#')[0].split('\n')[0] )
+		return eval( self.pinput_combs.split('nLabels = ')[-1].split('#')[0].split('\n')[0] )
+
+	def Plot_Dims(self):
+		output = self.pinput_combs.split('Plot_Dims = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		if output == '#':
+			return None # no plot dimensions provided
+		else:
+			return eval(output) 
 
 	def plot_savename(self):
-		output=self.paraminput.split('plot_savename = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		output=self.pinput_combs.split('plot_savename = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 		if output == '#':
 			output='Tmp_plot.png'
 		return output
 
+
 	def savedirectory(self):
-		output=self.paraminput.split('savedirectory = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		output=self.pinput_combs.split('savedirectory = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 		if output == '#':
 			output='.'
 		return output
@@ -99,32 +128,32 @@ class Get_Input:
 	# --- Apply an S8 Prior? ---
 	def Apply_S8Prior(self):
 		try:
-			output=eval( self.paraminput.split('Apply_S8Prior = ')[-1].split('#')[0].split('\n')[0] )
+			output=eval( self.pinput_combs.split('Apply_S8Prior = ')[-1].split('#')[0].split('\n')[0] )
 		except SyntaxError:
 			output=False
 		return output
 
 	def S8_Bounds(self): 
-		return eval(self.paraminput.split('S8_Bounds = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return eval(self.pinput_combs.split('S8_Bounds = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 
 	# --- Apply the Hartlap factor ---
 	def Apply_Hartlap(self):
 		try:
-			output=eval( self.paraminput.split('Apply_Hartlap = ')[-1].split('#')[0].split('\n')[0] )
+			output=eval( self.pinput_combs.split('Apply_Hartlap = ')[-1].split('#')[0].split('\n')[0] )
 		except SyntaxError:
 			output=False
 		return output	
 
 	# --- MCMC settings ---	
 	def nwalkers(self):
-		return int(self.paraminput.split('nwalkers = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.pinput_combs.split('nwalkers = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 	def burn_steps(self):
-		return int(self.paraminput.split('burn_steps = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.pinput_combs.split('burn_steps = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 	def real_steps(self):
-		return int(self.paraminput.split('real_steps = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.pinput_combs.split('real_steps = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 			
 
@@ -132,94 +161,79 @@ class Get_Input:
 	# ------------------------------------------- STATISTIC INFO ------------------------------------------------------
 
 	# ---- Find section of paramfile associated with a given statistic number ---
-	def Filter_Stat_Info(self, stat_num):
-		return self.paraminput.split('STATISTIC %s ' %stat_num)[-1].split('STATISTIC')[0]
+	# ---- this works for both the stats & sys input paramfiles (determined by pinput) --- 
+	def Filter_Stat_Info(self, pinput, stat_num):
+		return pinput.split('STATISTIC %s ' %stat_num)[-1].split('STATISTIC')[0]
 
 
 	# --- Predictions per statistic ---	
 	def nBins(self, stat_num):
-		return int(self.Filter_Stat_Info(stat_num).split('nBins = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return int(self.Filter_Stat_Info(self.pinput_stats, stat_num).split('nBins = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 	def Bins_To_Use(self, stat_num):
-		return eval(self.Filter_Stat_Info(stat_num).split('Bins_To_Use = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return eval(self.Filter_Stat_Info(self.pinput_stats, stat_num).split('Bins_To_Use = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
-	def PredFile(self, stat_num):
-		return self.Filter_Stat_Info(stat_num).split('PredFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+	def PredFile(self, pinput, stat_num):
+		return self.Filter_Stat_Info(pinput, stat_num).split('PredFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
-	def PredIDs(self, stat_num):
-		return eval(self.Filter_Stat_Info(stat_num).split('PredIDs = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+	def PredIDs(self, pinput, stat_num):
+		return eval(self.Filter_Stat_Info(pinput, stat_num).split('PredIDs = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 	
-	def PredCols(self, stat_num): 
-		return eval(self.Filter_Stat_Info(stat_num).split('PredCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
+	def PredCols(self, pinput, stat_num): 
+		return eval(self.Filter_Stat_Info(pinput, stat_num).split('PredCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
 
-	def PredNodesFile(self, stat_num, string):
-		return self.Filter_Stat_Info(stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+	def PredNodesFile(self, pinput, stat_num, string):
+		return self.Filter_Stat_Info(pinput, stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
-	def PredNodesCols(self, stat_num, string): 
-		return eval(self.Filter_Stat_Info(stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+	def PredNodesCols(self, pinput, stat_num, string): 
+		return eval(self.Filter_Stat_Info(pinput, stat_num).split('%s = ' %string)[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 	def Cols4Plot(self, stat_num): 
-		return eval(self.Filter_Stat_Info(stat_num).split('Cols4Plot = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
-
-
-	# --- Covariance per statistic ---
-	def CovFile(self, stat_num):
-		return self.Filter_Stat_Info(stat_num).split('CovFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
-
-	def CovArea(self, stat_num):
-		return eval(self.Filter_Stat_Info(stat_num).split('CovArea = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
-
-	def SurveyArea(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('SurveyArea = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
-
-	def Nreal(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('Nreal = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+		return eval(self.Filter_Stat_Info(self.pinput_stats, stat_num).split('Cols4Plot = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 
 	# --- Data per statistic ---
 	def DataFile(self, stat_num):
-		return self.Filter_Stat_Info(stat_num).split('DataFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		return self.Filter_Stat_Info(self.pinput_stats, stat_num).split('DataFile = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 
 	def DataCols(self, stat_num): 
-		return eval(self.Filter_Stat_Info(stat_num).split('DataCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
+		return eval(self.Filter_Stat_Info(self.pinput_stats, stat_num).split('DataCols = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])
 
 
 	# --- Plotting each statistic ---
-	def PlotLabel(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('PlotLabel = ')[-1].split('#')[0].split('\n')[0] )	
-
-	def PlotColour(self, stat_num):
-		return eval(self.Filter_Stat_Info(stat_num).split('PlotColour = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0])	
-
+	# NB: NEXT 2 FUNCNS REDUNDANT? ALL HANDLED BY COMBINATIONS FILE?
 	def SmoothContour(self, stat_num):
 		try:
-			output=eval( self.Filter_Stat_Info(stat_num).split('SmoothContour = ')[-1].split('#')[0].split('\n')[0] )
+			output=eval( self.Filter_Stat_Info(self.pinput_stats, stat_num).split('SmoothContour = ')[-1].split('#')[0].split('\n')[0] )
 		except SyntaxError:
 			output=False
 		return output
 
 	def SmoothScale(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('SmoothScale = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+		return eval( self.Filter_Stat_Info(self.pinput_stats, stat_num).split('SmoothScale = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
 
 
 	# --- EMULATOR SETTINGS --- #
 
-	def Transform(self, stat_num):
-		return self.Filter_Stat_Info(stat_num).split('Transform = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] 
+	def Model(self, pinput, stat_num):
+		return self.Filter_Stat_Info(pinput, stat_num).split('Model = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] 	
 
-	def Perform_PCA(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('Perform_PCA = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+	def Transform(self, pinput, stat_num):
+		return self.Filter_Stat_Info(pinput, stat_num).split('Transform = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] 
 
-	def n_restarts_optimizer(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('n_restarts_optimizer = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+	def Perform_PCA(self, pinput, stat_num):
+		return eval( self.Filter_Stat_Info(pinput, stat_num).split('Perform_PCA = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
 
-	def n_components(self, stat_num):
-		return eval( self.Filter_Stat_Info(stat_num).split('n_components = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+	def n_restarts_optimizer(self, pinput, stat_num):
+		return eval( self.Filter_Stat_Info(pinput, stat_num).split('n_restarts_optimizer = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
+
+	def n_components(self, pinput, stat_num):
+		return eval( self.Filter_Stat_Info(pinput, stat_num).split('n_components = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] )
 
 	# --- PRIORS & STARTING MCMC COSMOLOGY PER STATISTIC --- 
 	def Priors_Start_MCMC(self, stat_num):
-		nodes= self.LoadPredNodes(stat_num, 'pred') 
-		priorfile=self.Filter_Stat_Info(stat_num).split('Prior_File = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
+		nodes = self.LoadPredNodes(self.pinput_stats, stat_num, 'pred') 
+		priorfile = self.Filter_Stat_Info(self.pinput_combs, stat_num).split('Prior_File = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0]
 		try:
 			priors = np.load( priorfile )
 		except FileNotFoundError:
@@ -227,9 +241,17 @@ class Get_Input:
 			priors = []
 			for i in range(nodes.shape[1]):
 				priors.append([ nodes[:,i].min(), nodes[:,i].max() ])
+
+			# If including systematics, load these to add to prior
+			if type(self.pfile_sys) != type(None):
+				for ps in range(len(self.pinput_sys)):  # cycle through sys-files
+					nodes_sys = self.LoadPredNodes(self.pinput_sys[ps], stat_num, 'pred') 
+					for i in range(nodes_sys.shape[1]):
+						priors.append([ nodes_sys[:,i].min(), nodes_sys[:,i].max() ])
+
 			priors = np.array( priors )
 		
-		# Set starting cosmol to centre of parameter space
+		# Set starting point to centre of parameter space
 		start = np.zeros( priors.shape[0] ) 
 		for i in range(nodes.shape[1]):
 			start[i] = ( priors[i].min() + priors[i].max() ) /2.
@@ -240,7 +262,7 @@ class Get_Input:
 
 	# ------------------------------------------- COMBINATION INFO ------------------------------------------------------
 	def Filter_Combine_Info(self, stat_num):
-		return self.paraminput.split('COMBINATION %s ' %stat_num)[-1].split('COMBINATION')[0]
+		return self.pinput_combs.split('COMBINATION %s ' %stat_num)[-1].split('COMBINATION')[0]
 
 
 	# --- Covariance per combination ---
@@ -286,21 +308,11 @@ class Get_Input:
 
 
 	# ------------------------------------------- READING FUNCTIONS ------------------------------------------------------
-	def HPs(self, stat_num):
-		# Used in cases where the emulator is being executed within an MCMC
-		hpfile=self.Filter_Stat_Info(stat_num).split('HPs_File = ')[-1].split(' ')[0].split('\n')[0].split('\t')[0] 
-		if hpfile == "None" or '---' in hpfile or '#' in hpfile or not hpfile:
-			HPs = None
-		elif hpfile[-4:] == ".npy":
-			HPs = np.load( hpfile )
-		else:
-			HPs = np.loadtxt( hpfile )
-		return HPs
 
-	def LoadPred(self, stat_num):
+	def LoadPred(self, pinput, stat_num):
 		nbins = self.nBins(stat_num)
 		bins_to_use = self.Bins_To_Use(stat_num)
-		predfile = self.PredFile(stat_num)
+		predfile = self.PredFile(pinput, stat_num)
 
 		if predfile[-4:] == ".npy":
 			# Read in pickled file
@@ -310,16 +322,15 @@ class Get_Input:
 			x = None # no x-predictions read in
 				
 		else:
-			predIDs = self.PredIDs(stat_num)
-			predcols = self.PredCols(stat_num)
+			predIDs = self.PredIDs(pinput, stat_num)
+			predcols = self.PredCols(pinput, stat_num)
 
 			y = np.zeros([ len(predIDs), len(bins_to_use) ])
 			for i in range( len(predIDs) ):
-				pf = '%s%s%s' %(predfile.split('XXXX')[0],predIDs[i],predfile.split('XXXX')[1])
+				pf = predfile.replace('XXXX', str(predIDs[i]))
 				x_precut, y_precut = np.loadtxt(pf, usecols=predcols, unpack=True)
 				y[i,:] = y_precut[bins_to_use]
 			x = x_precut[bins_to_use]
-
 		return x,y
 
 	def LoadData(self, stat_num):
@@ -402,16 +413,19 @@ class Get_Input:
 	
 
 
-	def LoadPredNodes(self, stat_num, pred_OR_trial):
+	def LoadPredNodes(self, pinput, stat_num, pred_OR_trial):
 		if "pred" in pred_OR_trial:
-			nodesfile = self.PredNodesFile(stat_num, 'PredNodesFile' )
-			cols = self.PredNodesCols(stat_num, 'PredNodesCols' )
+			nodesfile = self.PredNodesFile(pinput, stat_num, 'PredNodesFile' )
+			cols = self.PredNodesCols(pinput, stat_num, 'PredNodesCols' )
 		elif "trial" in pred_OR_trial:
 			# only will read in Trial Nodes when doing a 1D or 2D likelihood line/grid.
-			nodesfile = self.PredNodesFile(stat_num, 'TrialNodesFile' )
-			cols = self.PredNodesCols(stat_num, 'TrialNodesCols' )
+			nodesfile = self.PredNodesFile(pinput, stat_num, 'TrialNodesFile' )
+			cols = self.PredNodesCols(pinput, stat_num, 'TrialNodesCols' )
 
 		nodes = np.loadtxt(nodesfile, usecols=(cols))
+		# if it's 1D, reshape it:
+		if len(nodes.shape)==1:
+			nodes = nodes.reshape(-1,1)
 		return nodes
 
 		#od_or_td = self.OneD_TwoD_Or_nD()
@@ -439,7 +453,7 @@ class Get_Input:
 		# identify which columns of the TrialNodesFile will be used for the axes
 		# on the contours plot (only used for 1D-line/2D-grid likelihood evaluations)
 	
-		nodesfile = self.PredNodesFile(stat_num, 'TrialNodesFile' )
+		nodesfile = self.PredNodesFile(self.pinput_stats, stat_num, 'TrialNodesFile' )
 		cols = self.Cols4Plot(stat_num)
 
 		od_or_td = self.OneD_TwoD_Or_nD()
@@ -495,9 +509,9 @@ class Get_Input:
 		# use_stats is an array containing the numbers of the statistics to combine the prediction vectors for.
 		for stat in use_stats:
 			if stat==use_stats[0]:
-				pred = self.LoadPred(stat)[1]
+				pred = self.LoadPred(self.pinput_stats, stat)[1]
 			else:
-				pred = np.concatenate( (pred,self.LoadPred(stat)[1]), axis=1 )
+				pred = np.concatenate( (pred,self.LoadPred(self.pinput_stats, stat)[1]), axis=1 )
 		return pred
 
 
@@ -510,7 +524,7 @@ class Get_Input:
 			xc, yc = self.LoadNodes4Plot(stat_num)
 		else:
 			# but if reading in pre-made predictions, get x,y from PredNodesFile
-			nodes = self.LoadPredNodes(stat_num, 'pred') 
+			nodes = self.LoadPredNodes(self.pinput_stats, stat_num, 'pred') 
 			xc = nodes[:,0]
 			yc = nodes[:,1]		
 
@@ -537,7 +551,7 @@ class Get_Input:
 			xc, yc = self.LoadNodes4Plot(stat_num)
 		else:
 			# but if reading in pre-made predictions, get x,y from PredNodesFile
-			nodes = self.LoadPredNodes(stat_num, 'pred') 
+			nodes = self.LoadPredNodes(self.pinput_stats, stat_num, 'pred') 
 			xc = nodes[:,0]
 			yc = nodes[:,1]
 
@@ -590,6 +604,71 @@ class Get_Input:
 					return -np.inf
 		return 0.
 
+
+	# if a transformation (scaling/log/PCA is called for, apply it here)
+	def Apply_Transformation(self, pinput, stat, Train_Pred, Train_BFs=None, Train_Pred_Mean=None, Train_x=None):
+		# Identify the transformation for this statistic
+		if self.Transform(pinput,stat) == "log":  
+			Train_Pred = np.log( Train_Pred )
+		elif "xy" in self.Transform(pinput,stat):
+			try:
+				scale = float( self.Transform(pinput,stat).split('xy')[-1] )
+			except ValueError:
+				scale = 1.
+			Train_Pred *= (Train_x*scale)
+		elif "None" in self.Transform(pinput,stat) or '------' in self.Transform(pinput,stat):
+			print("Performing no transform on the input training data.")
+		else:
+			print( "Only log and xyN (x-TIMES-y-TIMES-N) transforms are supported. Not %s. EXITING." %self.Transform(pinput,stat) )
+			sys.exit()
+
+		if self.Perform_PCA(pinput,stat):
+			PCAC = PCA_Class(self.n_components(pinput,stat))
+			# either do PCA on Train_Pred directly, or using pre-defined BFs/Mean
+			if type(Train_BFs) == type(None):
+				Train_BFs, Train_Weights, Train_Recons = PCAC.PCA_BySKL(Train_Pred)
+				Train_Pred_Mean = np.mean( Train_Pred, axis=0 )
+			else:
+				Train_Weights,_ = PCAC.PCA_ByHand(self, Train_BFs, Train_Pred, Train_Pred_Mean)
+			inTrain_Pred = np.copy( Train_Weights )
+
+		else:
+			inTrain_Pred = np.copy(Train_Pred)
+			Train_BFs = []        # dummy to be stored in case you have a mix of stats which do/dont use PCA in this combination.				
+			Train_Pred_Mean = []  # ^same. Need these to preserve order of stored BFs and Train Pred Means.
+
+		return inTrain_Pred, Train_BFs, Train_Pred_Mean 
+
+	# remove any transformation (scaling/log/PCA) from some predictions
+	def Remove_Transformation(self, pinput, stat, Pred, Train_BFs=None, Train_Pred_Mean=None, Train_x=None):
+		# Un-do the PCA if appropriate
+		if self.Perform_PCA(pinput,stat):
+			PCAC = PCA_Class(self.n_components(pinput,stat))
+			out_Pred = PCAC.Convert_PCAWeights_2_Predictions(Pred, Train_BFs, Train_Pred_Mean)
+		else:
+			out_Pred = Pred
+
+		# Un-do the transformation:
+		if self.Transform(pinput,stat) == "log":  
+			out_Pred = np.exp( out_Pred )
+		elif "xy" in self.Transform(pinput,stat):
+			try:
+				scale = float( self.Transform(pinput,stat).split('xy')[-1] )
+			except ValueError:
+				scale = 1.
+			out_Pred = out_Pred/(Train_x*scale)
+		return out_Pred 
+
+
+	def linear(self, x0): 
+		# linear model used to fit sys-bias per bin (e.g. per theta for 2pcf) as a func of Sys_Nodes x (e.g. dz).
+		# here x0 is the val of Sys_Nodes where bias=0. IMPLEMENTATION BELOW ASSUMES bias=0 @ SYS_PARAM=0;
+		# made this the case for Baryons & dz, but could be false for other sys in general. 
+		# Because curve_fit doesnt play nice with fixed params (x0), need an outer & an inner loop to provide this.
+		def inner_linear(x, m):
+			return m*(x-x0)	
+		return inner_linear
+
 	# This function is called once at the start of each likelihood sampling
 	# to read in, set the emulator Training set + HPs, and apply the relevant transformations
 	# for this combination of stats.
@@ -599,76 +678,96 @@ class Get_Input:
 		# temporary arrays to store & stack the info for each stat in this combination.
 		HPs_store             = []
 		Train_x_store         = []
-		inTrain_Pred_store    = []
+		inTrain_Pred_store    = [] 
 		Train_Pred_Mean_store = []
 		Train_BFs_store       = []
+		# same, but to store info relating to systematics training set:
+		Sys_HPs_store       = []
+		inSys_Pred_store    = [] 
+		Sys_Pred_Mean_store = []
+		Sys_BFs_store       = []
+		if type(self.pfile_sys) != type(None):
+			for ps in range(len(self.pinput_sys)): 	# cycle through sys-files
+				Sys_HPs_store.append([])
+				inSys_Pred_store.append([])
+				Sys_Pred_Mean_store.append([])
+				Sys_BFs_store.append([])
+		# Now sys storage vectors have right dimensionality
+
 
 		for stat in comb:
-			Train_x, Train_Pred = self.LoadPred(stat)			
-			
-			# Identify the transformation for this statistic
-			if self.Transform(stat) == "log":  
-				Train_Pred = np.log( Train_Pred )
-			elif "xy" in self.Transform(stat):
-				try:
-					scale = float( self.Transform(stat).split('xy')[-1] )
-				except ValueError:
-					scale = 1.
-				Train_Pred *= (Train_x*scale)
-			elif "None" in self.Transform(stat) or '------' in self.Transform(stat):
-				print("Performing no transform on the input training data.")
-			else:
-				print( "Only log and xyN (x-TIMES-y-TIMES-N) transforms are supported. Not %s. EXITING." %self.Transform(stat) )
-				sys.exit()
-
-			if self.Perform_PCA(stat):
-				PCAC = PCA_Class(self.n_components(stat))
-				Train_BFs, Train_Weights, Train_Recons = PCAC.PCA_BySKL(Train_Pred)
-				Train_Pred_Mean = np.mean( Train_Pred, axis=0 )
-				inTrain_Pred = np.copy( Train_Weights )
-			else:
-				inTrain_Pred = np.copy(Train_Pred)
-				Train_BFs = []        # dummy to be stored in case you have a mix of stats which do/dont use PCA in this combination.				
-				Train_Pred_Mean = []  # ^same. Need these to preserve order of stored BFs and Train Pred Means.
+			print("----------------------------- ON STAT %s IN COMB %s -----------------------------" %(stat, comb), flush=True)
+			# Load cosmological training set
+			Train_x, Train_Pred = self.LoadPred(self.pinput_stats, stat)	
+			# Apply transformation (if specified)	
+			inTrain_Pred, Train_BFs, Train_Pred_Mean = self.Apply_Transformation(self.pinput_stats, stat, Train_Pred, Train_x=Train_x)
 				
 			# storing info for each stat in the combination:
 			Train_x_store.append( Train_x )
 			inTrain_Pred_store.append( inTrain_Pred )
 			Train_BFs_store.append( Train_BFs )
 			Train_Pred_Mean_store.append( Train_Pred_Mean )
-			
+
+			# Now load systematics training set (if specified):
+			if type(self.pfile_sys) != type(None):
+				for ps in range(len(self.pinput_sys)):  # cycle through sys-files
+					Sys_x, Sys_Pred = self.LoadPred(self.pinput_sys[ps], stat)
+					# apply transformation (note, the binning of Train & Sys pred should be the same,
+					# i.e. Train_x & Sys_x should be identical or we'll get apples & oranges):
+					inSys_Pred, Sys_BFs, Sys_Pred_Mean = self.Apply_Transformation(self.pinput_sys[ps], stat, Sys_Pred, Train_x=Train_x) 
+					# store sys:
+					inSys_Pred_store[ps].append( inSys_Pred )
+					Sys_BFs_store[ps].append( Sys_BFs )
+					Sys_Pred_Mean_store[ps].append( Sys_Pred_Mean )
+
 			if self.OneD_TwoD_Or_nD() == "nD":
-				# then it's doing an MCMC, and should look for a file of HPs which may be saved:
-				HPs = self.HPs( stat ) 
-				if HPs == None:
-					# If not HPs_File is set, need to train emulator once to get these (100 restarts):	
-					print( "Running the emulator once with 1000 restarts to get the HPs." )
-					Train_Nodes = self.LoadPredNodes(stat, 'pred')
-					GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Train_Nodes )	
-					_,_,HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, 1000 )	
-					print(HPs)	
+				# Train GP emulator on predictions
+				print( "Running the cosmol emulator once with 1000 restarts to get the HPs." )
+				Train_Nodes = self.LoadPredNodes(self.pinput_stats, stat, 'pred')
+				GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Train_Nodes)	
+				_,_,HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, 1000 )	
+				print(HPs, flush=True)	
 				HPs_store.append( HPs )
 
+				# Now read in Sys & decide on modelling
+				if type(self.pfile_sys) != type(None):
+					for ps in range(len(self.pinput_sys)):  # cycle through sys-files
+						Sys_Nodes = self.LoadPredNodes(self.pinput_sys[ps], stat, 'pred')
+						
+						# Determine whether we are GP-emulating, or simple linear fit per bin:
+						if self.Model(self.pinput_sys[ps], stat) == "Linear":
+							# simple linear fit per bin of the stat (per theta in 2PCF example)
+							print("Using a linear model fit for this sys-bias. HPs (gradients per bin) are...:")
+							Sys_HPs = []
+							for t in range(len(Train_x)):
+								# here we set x0=0 (place where bias=0); also access most recent stat read in (hence [-1]):
+								h,_ = curve_fit(self.linear(x0=0), Sys_Nodes.flatten(), inSys_Pred_store[ps][-1][:,t])
+								Sys_HPs.append(h[0])
+							print(Sys_HPs, flush=True)
+							Sys_HPs_store[ps].append(Sys_HPs) # store lin fit grads for all theta bins
+
+						else:
+							# GP emu it is. 
+							print( "Running the sys emulator once with 1000 restarts to get the HPs." )
+							GPR_Class_Sys = GPR_Emu( Sys_Nodes, inSys_Pred_store[ps][-1], 
+								np.zeros_like(inSys_Pred_store[ps][-1]), Sys_Nodes)
+							_,_,Sys_HPs = GPR_Class_Sys.GPRsk(np.zeros(Sys_Nodes.shape[1]+1), None, 1000 )
+							print(Sys_HPs, flush=True)
+							Sys_HPs_store[ps].append(Sys_HPs)
+
+
+			# Note Giblin: 2D/1D Lhd is has no systematics functionality (since dim>2 if we include sys).
 			elif self.OneD_TwoD_Or_nD() == "1DEmu" or self.OneD_TwoD_Or_nD() == "2DEmu":  
 				# It's a 2D grid or 1D line of lhood evaluations & we are 
 				# emulating all trial predictions here:
-				Train_Nodes = self.LoadPredNodes(stat, 'pred')
-				Trial_Nodes = self.LoadPredNodes(stat, 'trial')
+				Train_Nodes = self.LoadPredNodes(self.pinput_stats, stat, 'pred')
+				Trial_Nodes = self.LoadPredNodes(self.pinput_stats, stat, 'trial')
 				GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), Trial_Nodes )	
 				GP_AVOUT, GP_STDOUT, GP_HPs = GPR_Class.GPRsk(np.zeros(Train_Nodes.shape[1]+1), None, self.n_restarts_optimizer(stat) )	
-
-				# Un-do the PCA if appropriate
-				if self.Perform_PCA(stat):
-					PCAC = PCA_Class(self.n_components(stat))
-					GP_Pred = PCAC.Convert_PCAWeights_2_Predictions(GP_AVOUT, Train_BFs, Train_Pred_Mean)
-				else:
-					GP_Pred = GP_AVOUT
-
-				# Un-do the transformation:
-				if self.Transform(stat) == "log":  
-					GP_Pred = np.exp( GP_Pred )
-				elif "xy" in self.Transform(stat):
-					GP_Pred = GP_Pred/(Train_x*scale)
+				
+				# Remove transformation from emul'd stats:
+				GP_Pred = self.Remove_Transformation(self.pinput_stats, stat, GP_AVOUT,
+					Train_BFs=Train_BFs, Train_Pred_Mean=Train_Pred_Mean, Train_x=Train_x)
 
 				# concatenate the combined statistics
 				if stat==comb[0]:
@@ -677,12 +776,18 @@ class Get_Input:
 					Trial_Pred_store = np.concatenate( (Trial_Pred_store, GP_Pred), axis=1 )
 
 		# store everything to be used by the lnlike function
-		self.HPs_4thiscomb               = HPs_store
-		self.Train_x_4thiscomb           = Train_x_store	 
-		self.inTrain_Pred_4thiscomb      = inTrain_Pred_store 	 
+		self.HPs_4thiscomb 			= HPs_store
+		self.Train_x_4thiscomb 			= Train_x_store	 
+		self.inTrain_Pred_4thiscomb 		= inTrain_Pred_store 	 
 		# --- Following only get used if Perform_PCA is true ---
-		self.Train_BFs_4thiscomb         = Train_BFs_store  		 
-		self.inTrain_Pred_Mean_4thiscomb = Train_Pred_Mean_store 
+		self.Train_BFs_4thiscomb 		= Train_BFs_store  		 
+		self.inTrain_Pred_Mean_4thiscomb	= Train_Pred_Mean_store 
+
+		# same but for the systematics:
+		self.Sys_HPs_4thiscomb		= Sys_HPs_store 
+		self.inSys_Pred_4thiscomb 	= inSys_Pred_store 
+		self.Sys_BFs_4thiscomb		= Sys_BFs_store
+		self.inSys_Pred_Mean_4thiscomb 	= Sys_Pred_Mean_store   
 
 		if self.OneD_TwoD_Or_nD() == "1DEmu" or self.OneD_TwoD_Or_nD() == "2DEmu":   
 			return Trial_Pred_store
@@ -698,41 +803,62 @@ class Get_Input:
 		# read in the predictions (emulator needs these even when trained),
 		# and emulate prediction for this cosmology.
 		# start by checking the TrainPred has been correctly set for this combo of stats:
-		if self.inTrain_Pred_4thiscomb == None:
+		if type(self.inTrain_Pred_4thiscomb) == type(None):
 			self.Assemble_TrainPred_and_HPs( comb )
+
+		# if including systematics,split the proposed coord into cosmol. & sys. params:
+		# use dimensionality of HPs to make the split.
+		if type(self.pfile_sys) != type(None):
+			Ndim_cos = len(self.HPs_4thiscomb[0])-1 # (-1 is for the amplitude HP)
+			p_cos = p[:Ndim_cos] 			# cosmol params
+			p_sys = p[Ndim_cos:]			# sys params
+		else:
+			p_cos = p 
 
 
 		GP_Pred_All = np.ones([]) # Store the emulated predictions for each stat used in the combination.
 		count = 0                 # count increments through statistics
 		for stat in comb:
 			# Grab the important data from memory needed for the likelihood evaluation
-			HPs             = self.HPs_4thiscomb[count]
-			Train_x         = self.Train_x_4thiscomb[count]	 
-			inTrain_Pred    = self.inTrain_Pred_4thiscomb[count]       
-			Train_BFs       = self.Train_BFs_4thiscomb[count]          		 
+			HPs 		= self.HPs_4thiscomb[count]
+			Train_x 	= self.Train_x_4thiscomb[count]	 
+			inTrain_Pred 	= self.inTrain_Pred_4thiscomb[count]       
+			Train_BFs 	= self.Train_BFs_4thiscomb[count]          		 
 			Train_Pred_Mean = self.inTrain_Pred_Mean_4thiscomb[count]
-		
-			# Run the emulator		
-			GPR_Class = GPR_Emu( self.LoadPredNodes(stat, 'pred'), inTrain_Pred, np.zeros_like(inTrain_Pred), p.reshape(1,-1) )	
-			GP_AVOUT, GP_STDOUT, GP_HPs = GPR_Class.GPRsk(HPs, None, self.n_restarts_optimizer(stat) )	
 
-			# Un-do the PCA if appropriate
+			# Run the (comsological) emulator
+			Train_Nodes = self.LoadPredNodes(self.pinput_stats, stat, 'pred')		
+			GPR_Class = GPR_Emu( Train_Nodes, inTrain_Pred, np.zeros_like(inTrain_Pred), p_cos.reshape(1,-1) )	
+			GP_AVOUT,_,_ = GPR_Class.GPRsk(HPs, None, 0 )	
+
+			# Remove transformation from emul'd stats:
 			# Output is shaped (1,n_components) --> need to select [0,:]
-			if self.Perform_PCA(stat):
-				PCAC = PCA_Class(self.n_components(stat))
-				GP_Pred = PCAC.Convert_PCAWeights_2_Predictions(GP_AVOUT, Train_BFs, Train_Pred_Mean)[0,:]
-			else:
-				GP_Pred = GP_AVOUT[0,:]
+			GP_Pred = self.Remove_Transformation(self.pinput_stats, stat, GP_AVOUT[0,:],
+							Train_BFs=Train_BFs, Train_Pred_Mean=Train_Pred_Mean, Train_x=Train_x)
 
-			# Un-do the transformation:
-			if self.Transform(stat) == "log":  
-				GP_Pred = np.exp( GP_Pred )
-			elif "xy" in self.Transform(stat):
-				try:
-					scale = float( self.Transform(stat).split('xy')[-1] )
-				except ValueError:
-					scale = 1.
-				GP_Pred = GP_Pred/(Train_x*scale)
+			# Emulate the systematic contribution: 
+			if type(self.pfile_sys) != type(None):
+				for ps in range(len(self.pinput_sys)):  # cycle through sys-files
+					Sys_HPs 	= self.Sys_HPs_4thiscomb[ps][count]
+					inSys_Pred 	= self.inSys_Pred_4thiscomb[ps][count]       
+					Sys_BFs 	= self.Sys_BFs_4thiscomb[ps][count]          		 
+					Sys_Pred_Mean 	= self.inSys_Pred_Mean_4thiscomb[ps][count]
+					Sys_Nodes = self.LoadPredNodes(self.pinput_sys[ps], stat, 'pred')
+
+					if self.Model(self.pinput_sys[ps], stat) == "Linear":
+						# do linear model per x-bin (theta in 2PCF case)
+						Sys_AVOUT = np.zeros([ 1,len(Train_x) ])
+						for t in range(len(Train_x)):
+							# Again we assume x0 (place where bias=0) is 0
+							Sys_AVOUT[0,t] = self.linear(x0=0)(p_sys[ps].reshape(1,-1), Sys_HPs[t])
+					else:
+						# GP-emu it is. 
+						GPR_Class_Sys = GPR_Emu( Sys_Nodes, inSys_Pred, np.zeros_like(inSys_Pred), p_sys[ps].reshape(1,-1) )
+						Sys_AVOUT,_,_ = GPR_Class_Sys.GPRsk(Sys_HPs, None, 0 )
+					# rm transformation:
+					Sys_Pred = self.Remove_Transformation(self.pinput_sys[ps], stat, Sys_AVOUT[0,:],
+								Train_BFs=Sys_BFs, Train_Pred_Mean=Sys_Pred_Mean, Train_x=Train_x) # (Train_x=Sys_x)
+					GP_Pred+=Sys_Pred # add sys contribution
 
 			# Combine the predictions
 			GP_Pred_All = np.append( GP_Pred_All, GP_Pred ) 
@@ -740,7 +866,7 @@ class Get_Input:
 			# increment statistics count.
 			count +=1
 
-		GP_Pred_All = np.delete( GP_Pred_All, 0 )  # get rid of first element (comes from initialisation) & un-do log transform
+		GP_Pred_All = np.delete( GP_Pred_All, 0 )  # get rid of first element (comes from initialisation) 
 		LnLike = -0.5 * np.dot( np.transpose(data - GP_Pred_All), np.dot(np.linalg.inv(cov), (data - GP_Pred_All)  ))
 		return LnLike
 
@@ -793,12 +919,17 @@ class Get_Input:
 
 		# Just in case the parameter file specifies MULTIPLE combinations of stats, we need to RESET
 		# the following variables, which stored data specific to each combination of statistics in memory.
-		self.Train_x_4thiscomb           = None		 
-		self.inTrain_Pred_4thiscomb      = None   	 
-		self.Train_BFs_4thiscomb         = None		 
+		self.Train_x_4thiscomb 		= None		 
+		self.inTrain_Pred_4thiscomb 	= None   	 
+		self.Train_BFs_4thiscomb 	= None		 
 		self.inTrain_Pred_Mean_4thiscomb = None      
-		self.HPs_4thiscomb               = None     	 
-
+		self.HPs_4thiscomb 		= None    
+		# same for sys:
+		if type(self.pfile_sys) != type(None):
+			self.inSys_Pred_4thiscomb 	= None   	 
+			self.Sys_BFs_4thiscomb 		= None		 
+			self.inSys_Pred_Mean_4thiscomb 	= None      
+			self.Sys_HPs_4thiscomb 		= None  
 		return samples
 
 
@@ -808,8 +939,8 @@ class Get_Input:
 		if not os.path.exists(self.savedirectory()):
 	 		os.makedirs(self.savedirectory())
 
-		savename = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s" %(self.savedirectory(), self.SurveyCombinedArea(comb_num), 
-																				  self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
+		savename = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s" %(self.savedirectory(), 
+			self.SurveyCombinedArea(comb_num), self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
 		samples = self.Run_MCMC(comb_num, comb)
 		np.save( savename, samples )
 		#self.Plot_MCMC_Lhd(samples, savename)
@@ -843,7 +974,7 @@ class Get_Input:
 				xc, yc = self.LoadNodes4Plot(Use_Stats[i])
 			else:
 				# but if reading in pre-made predictions, get x,y from PredNodesFile
-				nodes = self.LoadPredNodes(Use_Stats[i], 'pred') 
+				nodes = self.LoadPredNodes(self.pinput_stats, Use_Stats[i], 'pred') 
 				xc = nodes[:,0]
 				yc = nodes[:,1]
 
@@ -862,7 +993,7 @@ class Get_Input:
 				xc, yc = self.LoadNodes4Plot(Combine_Stats[i][0]) # read cosmol coords for the 1st stat of the i'th combination
 			else:
 				# but if reading in pre-made predictions, get x,y from PredNodesFile
-				nodes = self.LoadPredNodes(Combine_Stats[i][0], 'pred') 
+				nodes = self.LoadPredNodes(self.pinput_stats, Combine_Stats[i][0], 'pred') 
 				xc = nodes[:,0]
 				yc = nodes[:,1]
 
@@ -935,11 +1066,34 @@ class Get_Input:
 	
 		# If plot_limits set in parameter file, read them in:
 		try:
-			limits = eval( self.paraminput.split('Plot_Limits = ')[-1].split('#')[0].split('\n')[0] )
+			limits = eval( self.pinput_combs.split('Plot_Limits = ')[-1].split('#')[0].split('\n')[0] )
 		except SyntaxError:
-			limits = None
+			# If no limits were read in, set them to the range of the first set of samples.
+			comb_num = 1
+			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(),self.SurveyCombinedArea(comb_num),self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
+			samples = np.load( sample_name )
+			limits = []
+			for j in range(samples.shape[1]):
+				limits.append([ samples[:,j].min(), samples[:,j].max() ]) 
 
 		print("The plot limits have been set to: ", limits) 
+
+		# Decide what dimensions are getting plotted (if Plot_Dims not set, all will be plotted)
+		# But note, if Plot_Dims NOT set, you'll get problems if you try to plot chains of different dimensions:
+		PD = self.Plot_Dims()
+		if type(PD) != type(None): 
+			# Plot_Dims has been specified
+			print("Just plotting the following dimensions of the samples: ", PD)
+			plot_labels = []
+			plot_lims = []
+			for d in range(len(PD)):
+				plot_labels.append(self.nLabels()[PD[d]])
+				plot_lims.append(limits[PD[d]])
+		else: 
+			# if Plot_Dims not specified, plot all dimensions
+			plot_labels = self.nLabels()
+			plot_lims = limits
+			PD = range(len(plot_labels))
 
 
 		for i in range( len(self.Combine_Stats()) ):
@@ -947,25 +1101,19 @@ class Get_Input:
 			# sample_name matches the one used in Master_Run_MCMC
 			sample_name = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_%s.npy" %(self.savedirectory(),self.SurveyCombinedArea(comb_num),self.nwalkers(), self.real_steps(), self.CombName(comb_num) )
 			samples = np.load( sample_name )
+			samples = samples[:,PD] 
 
 			if self.SmoothCombinedContour(comb_num):
 				SS = self.SmoothCombinedScale(comb_num)
 				print("Read in contour smoothing scale of %s pxls" %SS)
 			else:
 				SS=1
-			
-			if limits == None:
-				# If no limits were read in, set them to the range of the first set of samples.
-				limits = []
-				for j in range(samples.shape[1]):
-					limits.append([ samples[:,j].min(), samples[:,j].max() ])  
-		
 
 			if i==0:
 				# Then it's the first set of samples, establish fig:
-				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
+				fig = corner.corner(samples, labels=plot_labels, range=plot_lims,
 						plot_contours=True, plot_density=False, plot_datapoints=False, smooth=SS,
-						levels=(0.68,0.95), truths=self.LoadDataNodes(), truth_color='black', 
+						levels=(0.68,0.95), truths=self.LoadDataNodes()[PD], truth_color='black', 
 						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw, 
 										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
@@ -973,9 +1121,9 @@ class Get_Input:
 
 			else:
 				# sequential set of contours - overplot them
-				fig = corner.corner(samples, labels=self.nLabels(), range=limits,
+				fig = corner.corner(samples, labels=plot_labels, range=plot_lims,
 						plot_contours=True, plot_density=False, plot_datapoints=False, smooth=SS,
-						levels=(0.68,0.95), truths=self.LoadDataNodes(),
+						levels=(0.68,0.95), truths=self.LoadDataNodes()[PD],
 						contour_kwargs={'colors':[self.PlotCombinedColour( comb_num )], 'linewidths':lw,
 										'linestyles':[self.PlotCombinedLS( comb_num )]},
 						hist_kwargs={'color':[self.PlotCombinedColour( comb_num )], 'linewidth':lw},
@@ -997,7 +1145,7 @@ class Get_Input:
 		fig.set_size_inches((16,17))
 		plt.legend(handles=handles, bbox_to_anchor=(0., 2.2, 1.0, .0), loc=4)
 
-		if savename == None:
+		if type(savename) == type(None):
 			# If no savename given use this one as default.
 			# Matches the format of the sample_name, specified above and originally in Master_Run_MCMC.
 			savename = "%s/Samples_SurveySize%s_GPErrorNone_nwalkers%s_nsteps%s_AllComb_Contours.png" %(self.savedirectory(), self.SurveyCombinedArea(1), 
@@ -1032,7 +1180,7 @@ class Get_Input:
 				preds = self.Assemble_TrainPred_and_HPs( [stat] )
 			else:
 				# Read in some pre-made predictions
-				preds = self.LoadPred(stat)[1] 
+				preds = self.LoadPred(self.pinput_stats, stat)[1] 
 			print(" shape of predictions is ", preds.shape )
 
 			# Load the cov, data & calc the likelihood on the grid

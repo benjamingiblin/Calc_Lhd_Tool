@@ -1,0 +1,499 @@
+# Parameter file for input to Calc_Lhd_Tool.py
+# Contains which combinations of statistics you want to run the analysis with
+# where the inventory of stats is specified in the inputted stats paramfile.
+
+# --------------------------------------------------------------------- GENERAL ANALYSIS ------------------------------------------------------------------------------
+Combine_Stats = [range(111,112)]
+
+	#[1,6,10,13,15]         # AUTO PDF(3.3arcmin)
+	#[16,21,25,28,30]	# AUTO PDF(6.6arcmin)
+	#[31,36,40,43,45]       # AUTO PDF(13.2arcmin)
+
+	# range(1,16)           # AUTO & CROSS PDF(3.3 arcmin)
+	# range(16,31)          # AUTO & CROSS PDF(6.6arcmin)
+	# range(31,46)          # AUTO & CROSS PDF(13.2arcmin)
+	# range(1,46)           # AUTO & CROSS PDF(3.3,6.6,13.2 arcmin)
+
+	# UNCLIPPED
+	#[46,51,55,58,60]       # auto-xi+
+	# range(46,61)        	# auto & cross xi+
+	# [61,66,70,73,75]      # auto-xi-
+	# range(61,76)          # auto & cross xi-
+	# range(46,76)          # auto & cross xi+/-
+
+	# CLIPPED
+	# range(76,91)          # auto & cross xi+^clip
+	# range(91,106)         # auto & cross xi-^clip
+	# range(76,106)         # auto & cross xi+/-^clip
+
+	# CLIPPED & UNCLIPPED
+	# np.append(range(76,106),range(46,76))   # auto & cross xi+/- unclip & clip
+
+	# -x-x-x-x-x- NO TOMOGRAPHY -x-x-x-x-x-x-x-
+	# [106,107]  # xi+/-, No Tomo
+	# [108,109]  # xi+/-^clip, No Tomo
+	# [108,109,106,107]  # clip & unclip, No Tomo
+	
+	# [110,111,112]  # PDF(3 scales), No Tomo
+	
+	
+	# Which statistics to combine, e.g. [[1,2,3], [4,5]] means
+	# combine stats 1&2&3 and separately combine 4&5. Empty means no combinations.
+
+OneD_TwoD_Or_nD = nD																	# Variable specifying if it's a 2D grid, 1D line or nD MCMC likelihood problem.
+
+DataNodesFile = /home/bengib/cosmoSLICS/Cosmologies/SLICS_Cosmol_Table_ExtraCol_NoHead_Fid_IA0.0_dz0_BaryOFF.txt
+
+DataNodesCols = [0,1,2,3,5,6,7]																# Which columns to pull out of DataNodesFile
+	      	     # If 1 number, will do a 1D analysis, if 2 numbers, it'll do 2D.
+
+Plot_Limits = [[0.10,0.50],[0.68,0.92],[0.55,0.85],[-2.0,-0.4]]
+#,[-3.0,3.0],[-0.9,0.9],[0.,2.]]
+
+Plot_Dims = [0,1,2,3]
+Apply_Hartlap = True
+
+# Plotting variables
+DataLabel = ''
+nLabels = [r'$\Omega_{\rm{m}}$',r'$S_8$',r'$h$',r'$w_0$']
+#,r'$A_{\rm IA}$',r'$\delta z$',r'$b_{\rm bary}$']
+savedirectory = Results_MCMC/DatacosmoSLICS_50LOS_Mosaic/SNR_vs_xip_tomo15bins_Omm-S8
+
+
+# --------------------------------------------------------------------- MCMC SETTINGS ------------------------------------------------------------------------------
+nwalkers = 60
+burn_steps = 100			
+real_steps = 400
+
+
+
+#x#x#x#x#x SNR Combinations #x#x#x#x#x
+
+#### AUTO CORR's #####
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS1.408.SNRPDF_4bins.zbins1-2-3-4-5.CovMat.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 3.3 \, \rm{arcmin}$, auto-only'
+PlotColour = 'lightgreen'
+
+SmoothContour = False                                           # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2													# standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = SNR-SS3.3arcmin-tomo5bins_IA0.0-added 
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.SNRPDF_4bins.zbins1-2-3-4-5.CovMat.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$, auto-only'
+PlotColour = 'green'
+
+CombName = SNR-SS6.6arcmin-tomo5bins_IA0.0-added 
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS5.631.SNRPDF_4bins.zbins1-2-3-4-5.CovMat.npy
+
+CovArea = 1000                      
+SurveyArea = 1000                   
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 13.2 \, \rm{arcmin}$, auto-only'
+PlotColour = 'darkred'
+
+CombName = SNR-SS13.2arcmin-tomo5bins_IA0.0-added 
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS1.408-2.816-5.631.SNRPDF_4bins.zbins1-2-3-4-5.CovMat.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF}$ Combined, auto-only'
+PlotColour = 'orange'
+
+SmoothContour = False                                           # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2													# standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = SNR-SS3.3arcmin-6.6arcmin-13.2arcmin-tomo5bins_IA0.0-added 
+
+
+#### CROSS CORR's #####
+
+# --------------------------------------------------------------------- COMBINATION X -----------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS1.408.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                     # The sky area this covariance was measured on
+SurveyArea = 1000                 # Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 3.3 \, \rm{arcmin}$'
+PlotColour = 'lightgreen'
+
+SmoothContour = False                                           # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2                                                 # standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = SNR-SS3.3arcmin-tomo15bins_IA0.0-added 
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$; Old cov'
+PlotColour = 'darkgreen'
+
+CombName = SNR-SS6.6arcmin-tomo15bins_IA0.0-added 
+
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                                                                       
+SurveyArea = 1000                                                                    
+
+Nreal = 2170
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$'
+PlotColour = 'lightgreen'
+
+CombName = SNR-SS6.6arcmin-tomo15bins_NrealCov2170_IA0.0-added
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                                                                       
+SurveyArea = 1000                                                                    
+
+Nreal = 2170
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$'
+PlotColour = 'red'
+
+CombName = SNR-SS6.6arcmin-tomo15bins_NrealCov2170_IA0.0-added_IA-Marg 
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000
+SurveyArea = 1000
+
+Nreal = 2170
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$; Sys-Marg'
+PlotColour = 'red'
+
+CombName = SNR-SS6.6arcmin-tomo15bins_NrealCov2170_IA-dz-Bary-Marg
+
+
+
+# --------------------------------------------------------------------- COMBINATION X -----------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS5.631.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                               # The sky area this covariance was measured on
+SurveyArea = 1000                           # Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 13.2 \, \rm{arcmin}$'
+PlotColour = 'red'
+
+CombName = SNR-SS13.2arcmin-tomo15bins_IA0.0-added 
+
+
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ----------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS1.408-2.816.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                               # The sky area this covariance was measured on
+SurveyArea = 1000                           # Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel =  r'$\rm{PDF}$ Combined' ### r'$\rm{PDF} \,, \sigma_{\rm s} = 3.3 + 6.6 \, \rm{arcmin}$'
+PlotColour = 'orange'
+
+SmoothContour = False                    # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2                          # standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = SNR-SS3.3arcmin-6.6arcmin-tomo15bins_IA0.0-added 
+
+
+# --------------------------------------------------------------------- COMBINATION X ----------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.27_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.9-1.2/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS1.408-2.816-5.631.SNRPDF_4bins.zbins11-12-13-14-15-22-23-24-25-33-34-35-44-45-55.CovMat.npy
+
+CovArea = 1000                               # The sky area this covariance was measured on
+SurveyArea = 1000                           # Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel =  r'$\rm{PDF}$ Combined' ### r'$\rm{PDF} \,, \sigma_{\rm s} = 3.3 + 6.6 + 13.2 \, \rm{arcmin}$'
+PlotColour = 'orange'
+
+SmoothContour = False                    # Can optionally Gaussian smooth the likelihood contours if they're noisy
+SmoothScale = 2                          # standev of smoothin kernel, in units of pxls on the grid.
+
+CombName = SNR-SS3.3arcmin-6.6arcmin-13.2arcmin-tomo15bins_IA0.0-added 
+
+
+# --------------------------------------------------------------------- COMBINATION 1 ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Mass_Recon/MRres140.64arcs_100Sqdeg_SN0.265_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-1.2/SN0.265_Mosaic.KiDS1000GpAM.NLOS217-Shuffle0.SS2.816.SNRPDF_4bins.CovMat.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000																			# Survey size you want to scale the cov to.
+
+Nreal = 217
+
+PlotLabel = r'$\rm{PDF} \,, \sigma_{\rm s} = 6.6 \, \rm{arcmin}$; No Tomo'
+PlotColour = 'lightgreen'
+
+CombName = SNR-SS6.6arcmin-NoTomo
+
+
+
+
+
+
+#x#x#x#x#x Unclipped xi+/- Combinations #x#x#x#x#x
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC+.CovMat.zbins1-2-3-4-5.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 2170 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'Auto. $\xi_+$'
+PlotColour = 'magenta'
+
+CombName = Unclipped-xip-tomo5bins_ScaleCut6.6arcmin_IA0.0-added 
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC+.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 2170 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'Auto & Cross $\xi_+$'
+PlotColour = 'magenta'
+
+CombName = Unclipped-xip-tomo15bins_ScaleCut6.6arcmin_IA0.0-added   
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 2170 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'Auto & Cross $\xi_-$'
+PlotColour = 'cyan'
+
+CombName = Unclipped-xim-tomo15bins_ScaleCut6.6arcmin_IA0.0-added   
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000								
+SurveyArea = 1000							
+Nreal = 2170 								
+									
+PlotLabel = r'$\xi_\pm$'
+PlotColour = 'black'
+
+CombName = Unclipped-xipm-tomo15bins_ScaleCut6.6arcmin_IA0.0-added_IA-Marg
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+
+CovArea = 1000
+SurveyArea = 1000
+Nreal = 217
+
+PlotLabel = r'$\xi_\pm$'
+PlotColour = 'black'
+
+CombName = Unclipped-xipm-tomo15bins_ScaleCut6.6arcmin_NrealCov2170_IA-dz-Bary-Marg
+
+
+
+
+
+# %%%% CLIPPED %%%%
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.CxC+.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 2170 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'Auto & Cross $\xi_+$'
+PlotColour = 'magenta'
+
+CombName = Clipped-xip-tomo15bins_ScaleCut6.6arcmin_IA0.0-added   
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.CxC-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000													# The sky area this covariance was measured on
+SurveyArea = 1000												# Survey size you want to scale the cov to.
+Nreal = 2170 													# Num realisations in cov  
+																# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'Auto & Cross $\xi_-^{\rm c}$'
+PlotColour = 'cyan'
+
+CombName = Clipped-xim-tomo15bins_ScaleCut6.6arcmin_IA0.0-added   
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.CxC+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000	
+SurveyArea = 1000	
+Nreal = 2170
+
+PlotLabel = r'$\xi_\pm^{\rm c}$'
+PlotColour = 'magenta'
+
+CombName = Clipped-xipm-tomo15bins_ScaleCut6.6arcmin_IA-dz-Bary-Marg   
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.CxC+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+
+CovArea = 1000
+SurveyArea = 1000
+Nreal = 217
+
+PlotLabel = r'$\xi_\pm^{\rm c}$'
+PlotColour = 'magenta'
+
+CombName = Clipped-xipm-tomo15bins_ScaleCut6.6arcmin_dz-Marg
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.ClipAndUnclip+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+			
+CovArea = 1000			# The sky area this covariance was measured on
+SurveyArea = 1000		# Survey size you want to scale the cov to.
+Nreal = 2170 			# Num realisations in cov  
+				# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_\pm^{\rm c & uc}$'
+PlotColour = 'black'
+
+CombName = Clipped-Unclipped-xipm-tomo15bins_ScaleCut6.6arcmin_IA-dz-Bary-Marg   
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.ClipAndUnclip+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+
+CovArea = 1000                  # The sky area this covariance was measured on
+SurveyArea = 1000               # Survey size you want to scale the cov to.
+Nreal = 2170                     # Num realisations in cov
+				# Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_\pm^{\rm c & uc}$'
+PlotColour = 'black'
+
+CombName = Clipped-Unclipped-xipm-tomo15bins_ScaleCut6.6arcmin_dz-Marg
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-1.2/ThBins9/NLOS2170/SN0.265_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.UCxUC+-.CovMat.npy
+
+CovArea = 1000                   # The sky area this covariance was measured on
+SurveyArea = 1000               # Survey size you want to scale the cov to.
+Nreal = 2170                     # Num realisations in cov
+                                # Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_\pm^{\rm uc}$; No Tomo'
+PlotColour = 'magenta'
+
+CombName = Unclipped-xipm-NoTomo_ScaleCut6.6arcmin_IA0.0-added  
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-1.2/ThBins9/NLOS2170/SN0.265_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.CxC+-.CovMat.npy
+
+CovArea = 1000                   # The sky area this covariance was measured on
+SurveyArea = 1000               # Survey size you want to scale the cov to.
+Nreal = 2170                     # Num realisations in cov
+                                # Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_\pm^{\rm c}$; No Tomo'
+PlotColour = 'cyan'
+
+CombName = Clipped-xipm-NoTomo_ScaleCut6.6arcmin_IA0.0-added  
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-1.2/ThBins9/NLOS2170/SN0.265_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.SS2.816.rCLIP_X3sigma.ClipAndUnclip+-.CovMat.npy
+
+CovArea = 1000                   # The sky area this covariance was measured on
+SurveyArea = 1000               # Survey size you want to scale the cov to.
+Nreal = 2170                     # Num realisations in cov
+                                # Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'$\xi_\pm^{\rm c & uc}$; No Tomo'
+PlotColour = 'black'
+
+CombName = Clipped-Unclipped-xipm-NoTomo_ScaleCut6.6arcmin_IA0.0-added 
+
+
+
+# --------------------------------------------------------------------- COMBINATION X ------------------------------------------------------------------------------
+CovFile = /home/bengib/Clipping_Pipeline/Tree_Correlation_Function/MRres140.64arcs_100Sqdeg_SNCycle_Mosaic_KiDS1000GpAM_zKiDS1000_ZBcut0.1-0.3_X_ZBcut0.1-0.3/ThBins9/NLOS2170/SN0.27_Mosaic.KiDS1000GpAM.NLOS2170-Shuffle0.ORIG.PDF-UCxUC+-.CovMat.zbins11_12_13_14_15_22_23_24_25_33_34_35_44_45_55.npy
+
+CovArea = 1000                   # The sky area this covariance was measured on
+SurveyArea = 1000               # Survey size you want to scale the cov to.
+Nreal = 2170                    # Num realisations in cov
+                                # Used to calc Hartlap correction if Apply Hartlap is True.
+
+PlotLabel = r'PDF Combined {\&} $\xi_\pm^{\rm uc}$'
+PlotColour = 'magenta'
+
+CombName = SNR-SS6.6arcmin-Unclipped-xipm-tomo15bins_ScaleCut6.6arcmin_IA0.0-added 
+
